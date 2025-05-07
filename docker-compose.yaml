@@ -1,0 +1,20 @@
+version: "3"
+services:
+  mosquitto:
+    container_name: mosquitto
+    image: eclipse-mosquitto:latest
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - "${MOSQ_CONF_PATH}:/mosquitto/config/mosquitto.conf:ro"
+      - "${MOSQ_PWFILE_PATH}:/mosquitto/config/pwfile:ro"
+      - "${MOSQ_DATA_PATH}:/mosquitto/data"
+      - "${MOSQ_LOG_PATH}:/mosquitto/log"
+    security_opt:
+      - no-new-privileges:true

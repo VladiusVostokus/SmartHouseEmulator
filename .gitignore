@@ -26,3 +26,13 @@ lerna-debug.log*
 
 # misc
 .DS_Store
+
+# Mosquitto persistent data
+infra/mosquitto/data/
+infra/mosquitto/log/
+
+# Mosquitto password file (sensitive)
+infra/mosquitto/config/pwfile
+
+# Mosquitto temporary lock files (sometimes generated)
+**/mosquitto.lock
