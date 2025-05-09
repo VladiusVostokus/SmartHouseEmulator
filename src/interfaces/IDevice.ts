@@ -1,10 +1,6 @@
-export interface IDeviceCommunicator {
-    id: string;
-    isOn: boolean;
-    subscribedTopics: object;
-    communicator: IDeviceCommunicator;
+export interface IDevice{
     subscribe(topic: string): void;
-    sendMessage(topic: string): void;
+    publish(topic: string): void;
     turnOn(): void;
     turnOff(): void;
 }
