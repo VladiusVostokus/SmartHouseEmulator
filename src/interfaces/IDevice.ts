@@ -1,10 +1,12 @@
-export interface IDeviceCommunicator {
-    id: string;
+import type { ICommunicator } from "./ICommunicator.js";
+
+export interface IDevice{
+    name: string;
+    type: string;
     isOn: boolean;
-    subscribedTopics: object;
-    communicator: IDeviceCommunicator;
+    communicator: ICommunicator;
     subscribe(topic: string): void;
-    sendMessage(topic: string): void;
+    publish(topic: string): void;
     turnOn(): void;
     turnOff(): void;
 }
