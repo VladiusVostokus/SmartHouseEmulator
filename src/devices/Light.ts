@@ -6,6 +6,7 @@ export class Light implements IDevice {
     private type: string;
     private isOn: boolean;
     private communicator: ICommunicator;
+    private brightness: number = 100;
 
     constructor(name: string, communicator: ICommunicator) {
         this.name = name;
@@ -25,5 +26,12 @@ export class Light implements IDevice {
     }
     turnOff(): void {
         this.isOn = false;
+    }
+    setBrightness(level: number): void {
+        if (level < 0 || level > 100) return;
+        this.brightness = level;
+    }
+    getBrightness(): number {
+        return this.brightness;
     }
 }
