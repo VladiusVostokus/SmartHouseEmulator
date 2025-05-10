@@ -1,5 +1,5 @@
-import type { ICommunicator } from "../interfaces/ICommunicator.js";
-import type { IDevice } from "../interfaces/IDevice.js";
+import type { ICommunicator } from "../interfaces/ICommunicator.ts";
+import type { IDevice } from "../interfaces/IDevice.ts";
 
 export class Thermostat implements IDevice {
     private name: string;
