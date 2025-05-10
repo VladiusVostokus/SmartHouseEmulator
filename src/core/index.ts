@@ -19,6 +19,25 @@ app.post("/light/:deviceId/:action", async (c) => {
   return c.text(`Sent ${action} to ${deviceId}`);
 });
 
+app.post("/thermostat/:deviceId/:action", async (c) => {
+  const { deviceId, action } = c.req.param();
+
+  if (action !== "turnOn" && action !== "turnOff") {
+    return c.text("Invalid action", 400);
+  }
+
+  // Тут буде логіка для термостата
+  return c.text(`Sent ${action} to thermostat ${deviceId}`);
+});
+
+app.post("/thermostat/:deviceId/setTemperature", async (c) => {
+  const { deviceId } = c.req.param();
+  const { temperature } = await c.req.json();
+
+  // Тут буде логіка для зміни температури
+  return c.text(`Set temperature of thermostat ${deviceId} to ${temperature}`);
+});
+
 serve(
   {
     fetch: app.fetch,
