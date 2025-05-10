@@ -1,6 +1,6 @@
-import type { DeviceConstructor } from "../devices/devicesCollection.js";
-import type { ICommunicator } from "../interfaces/ICommunicator.js";
-import type { IDevice } from "../interfaces/IDevice.js";
+import type { DeviceConstructor } from "../devices/devicesCollection.ts";
+import type { ICommunicator } from "../interfaces/ICommunicator.ts";
+import type { IDevice } from "../interfaces/IDevice.ts";
 
 export class DeviceFactory {
     deviceCollection: Record<string, DeviceConstructor>
