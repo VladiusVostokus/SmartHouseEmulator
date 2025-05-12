@@ -22,7 +22,7 @@ client.on("message", (topic, message) => {
 // Example publisher function
 export function sendLightCommand(
   deviceId: string,
-  action: "turnOn" | "turnOff"
+  action: "turnOn" | "turnOff",
 ) {
   const payload = JSON.stringify({
     action,

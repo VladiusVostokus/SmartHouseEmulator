@@ -88,3 +88,31 @@ curl -X POST http://localhost:3000/light/hallway-light-1/turnOn
 ```
 
 You should see the published MQTT messages in the subscriber terminal, and logs in your Hono.js console.
+
+## 5. Code Quality & Testing
+
+### Run ESLint (Code Linting)
+Check for code issues:
+```bash
+npm run lint
+```
+Automatically fix fixable issues:
+```bash
+npm run lint:fix
+```
+
+### Run Prettier (Code Formatting)
+Check formatting:
+```bash
+npm run format
+```
+Automatically format code:
+```bash
+npm run format:fix
+```
+
+### Run Tests
+Run all tests:
+```bash
+npm test
+```
