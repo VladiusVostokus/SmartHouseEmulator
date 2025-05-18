@@ -1,37 +1,49 @@
-import type { ICommunicator } from "../interfaces/ICommunicator.ts";
-import type { IDevice } from "../interfaces/IDevice.ts";
+import type { ICommand, IDevice } from "../interfaces/IDevice.js";
+import type { BaseProcessor } from "../patterns/baseProcessor.js";
 
 export class Light implements IDevice {
-  private name: string;
-  private type: string;
-  private isOn: boolean;
-  private communicator: ICommunicator;
-  private brightness: number = 100;
+  public readonly deviceId: string;
 
-  constructor(name: string, communicator: ICommunicator) {
-    this.name = name;
-    this.type = "light";
-    this.communicator = communicator;
-    this.isOn = false;
+  private isOn = false;
+
+  private brightness = 0;
+  private mode = "normal";
+  private processor!: BaseProcessor<Light>;
+
+  constructor(deviceId: string) {
+    this.deviceId = deviceId;
   }
 
-  subscribe(topic: string): void {
-    throw new Error("Method not implemented.");
+  public setProcessor(p: BaseProcessor<Light>) {
+    this.processor = p;
   }
-  publish(topic: string): void {
-    throw new Error("Method not implemented.");
+
+  public handleCommand(cmd: ICommand) {
+    // Додатковий загальний хендл — не використовується, бо Processor розбирає по topic
+    console.warn(
+      "Direct handleCommand not supported. Use topic-based dispatch.",
+    );
   }
-  turnOn(): void {
+
+  public turnOn() {
     this.isOn = true;
+
+    this.processor.send("status", { on: this.isOn });
   }
-  turnOff(): void {
+
+  public turnOff() {
     this.isOn = false;
+
+    this.processor.send("status", { on: this.isOn });
   }
-  setBrightness(level: number): void {
-    if (level < 0 || level > 100) return;
+
+  public setBrightness(level: number) {
     this.brightness = level;
+    this.processor.send("brightnessChanged", { brightness: level });
   }
-  getBrightness(): number {
-    return this.brightness;
+
+  public setEnergyMode(mode: string) {
+    this.mode = mode;
+    this.processor.send("modeChanged", { mode });
   }
 }
