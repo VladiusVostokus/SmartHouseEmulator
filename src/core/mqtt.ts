@@ -8,7 +8,7 @@ client.on("connect", () => {
   console.log("✅ Connected to Mosquitto MQTT broker");
 
   // Subscribe to motion topics
-  client.subscribe("home/+/motion", (err) => {
+  client.subscribe("home/+/status", (err) => {
     if (err) console.error("MQTT subscribe error:", err);
   });
 });
