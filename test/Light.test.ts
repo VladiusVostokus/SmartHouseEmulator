@@ -1,61 +1,101 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { Light } from '../src/devices/Light.js';
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import mqtt from "mqtt";
+import { type LightConfig, LightDevice } from "../src/devices/Light.js";
 
-// Мокаємо ICommunicator
-const mockCommunicator = {
-  publish: vi.fn(),
-  subscribe: vi.fn(),
-};
+// 1) Top‐level mock of 'mqtt' before we import anything that uses it:
+vi.mock("mqtt", () => {
+  // fakes for the MQTT client methods
+  const fakeOn = vi.fn((event: string, cb: () => void) => {
+    if (event === "connect") setImmediate(cb);
+  });
+  const fakeSubscribe = vi.fn();
+  const fakePublish = vi.fn();
 
-describe('Light', () => {
-  let light: Light;
+  // a fake client object
+  const client = {
+    on: fakeOn,
+    subscribe: fakeSubscribe,
+    publish: fakePublish,
+  };
+
+  return {
+    // mqtt.connect() returns our fake client
+    default: {
+      connect: vi.fn(() => client),
+    },
+  };
+});
+
+describe("LightDevice", () => {
+  let light: LightDevice;
+  let clientMock: ReturnType<typeof mqtt.connect>;
+  const cfg: LightConfig = { brokerUrl: "mqtt://test", deviceId: "test1" };
 
   beforeEach(() => {
-    light = new Light('Test Light', mockCommunicator);
+    // clear all calls on our mocks
+    vi.clearAllMocks();
+
+    // instantiate the device—its ctor calls mqtt.connect()
+    light = new LightDevice(cfg);
+
+    // grab the fake client that our mock returned
+    clientMock = (mqtt.connect as unknown as vi.Mock).mock.results[0].value;
   });
 
-  it('should be off by default', () => {
-    // @ts-ignore
-    expect(light.isOn).toBe(false);
+  it("connects and subscribes to its topics", () => {
+    // mqtt.connect must have been called with the broker URL
+    expect(mqtt.connect).toHaveBeenCalledWith(cfg.brokerUrl);
+
+    // on('connect', ...) was registered
+    expect(clientMock.on).toHaveBeenCalledWith("connect", expect.any(Function));
+
+    // simulate the connect callback so subscriptions fire
+    const connectCb = (clientMock.on as vi.Mock).mock.calls.find(
+      (c) => c[0] === "connect",
+    )![1];
+    connectCb();
+
+    // now subscribe() should have been called for each topic
+    expect(clientMock.subscribe).toHaveBeenCalledWith(
+      `/home/${cfg.deviceId}/turnLight`,
+    );
+    expect(clientMock.subscribe).toHaveBeenCalledWith(
+      `/home/${cfg.deviceId}/brightness`,
+    );
+    expect(clientMock.subscribe).toHaveBeenCalledWith(
+      `/home/${cfg.deviceId}/energyMode`,
+    );
   });
 
-  it('should turn on', () => {
-    light.turnOn();
-    // @ts-ignore
-    expect(light.isOn).toBe(true);
+  it("publishes status when turned on", () => {
+    // directly invoke the private handler
+    (light as any).handleMessage(`/home/${cfg.deviceId}/turnLight`, {
+      action: "on",
+    });
+
+    expect(clientMock.publish).toHaveBeenCalledWith(
+      `/home/${cfg.deviceId}/status`,
+      JSON.stringify({ action: "status", on: true }),
+    );
   });
 
-  it('should turn off', () => {
-    light.turnOn();
-    light.turnOff();
-    // @ts-ignore
-    expect(light.isOn).toBe(false);
+  it("publishes brightnessChanged when brightness set", () => {
+    (light as any).handleMessage(`/home/${cfg.deviceId}/brightness`, {
+      brightness: 55,
+    });
+
+    expect(clientMock.publish).toHaveBeenCalledWith(
+      `/home/${cfg.deviceId}/status`,
+      JSON.stringify({ action: "brightnessChanged", brightness: 55 }),
+    );
   });
 
-  it('should set brightness (TDD)', () => {
-    light.setBrightness(80);
-    expect(light.getBrightness()).toBe(80);
-  });
+  it("does not throw on unknown topic and does not publish", () => {
+    expect(() =>
+      (light as any).handleMessage(`/home/${cfg.deviceId}/foo`, { foo: 1 }),
+    ).not.toThrow();
 
-  it('should set brightness to min value', () => {
-    light.setBrightness(0);
-    expect(light.getBrightness()).toBe(0);
+    // ensure we never published status for that unknown topic
+    expect(clientMock.publish).not.toHaveBeenCalled();
   });
-
-  it('should set brightness to max value', () => {
-    light.setBrightness(100);
-    expect(light.getBrightness()).toBe(100);
-  });
-
-  it('should not set brightness to negative value (optional)', () => {
-    light.setBrightness(-10);
-    expect(light.getBrightness()).not.toBe(-10);
-  });
-
-  it('should keep brightness after turnOn/turnOff', () => {
-    light.setBrightness(60);
-    light.turnOn();
-    light.turnOff();
-    expect(light.getBrightness()).toBe(60);
-  });
-}); 
+});
