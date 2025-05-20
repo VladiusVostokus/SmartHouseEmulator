@@ -1,5 +1,5 @@
 // src/index.ts
-import { LightDevice, type LightConfig } from "../devices/Light.js";
+import { LightDevice, type LightConfig } from "../devices/LightDevice.js";
 import { startHttpServer } from "./server.js";
 
 async function bootstrap() {

@@ -2,7 +2,7 @@
 import type { ICommunicator } from "../interfaces/ICommunicator.js";
 import { DeviceFactory } from "./deviceFactory.js";
 import type { IDevice } from "../interfaces/IDevice.js";
-import { Light } from "../devices/Light.js";
+import { Light } from "../devices/LightDevice.js";
 import { Thermostat } from "../devices/Thermostat.js";
 
 interface ICommand {

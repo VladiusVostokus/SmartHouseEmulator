@@ -1,4 +1,4 @@
-import type { Light } from "../devices/Light.js";
+import type { Light } from "../devices/LightDevice.js";
 import type { ICommunicator } from "../interfaces/ICommunicator.js";
 import type { ICommand } from "../interfaces/IDevice.js";
 import { BaseProcessor } from "./baseProcessor.js";

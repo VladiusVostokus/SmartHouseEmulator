@@ -1,6 +1,6 @@
 import type { ICommunicator } from "../interfaces/ICommunicator.js";
 import type { IDevice } from "../interfaces/IDevice.js";
-import { Light } from "./Light.js";
+import { Light } from "./LightDevice.js";
 import { Thermostat } from "./Thermostat.js";
 import { MovementSensor } from "./MovementSensor.js";
 

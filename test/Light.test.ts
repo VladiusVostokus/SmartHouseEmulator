@@ -1,101 +1,134 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+// src/devices/LightDevice.test.ts
+import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import mqtt from "mqtt";
-import { type LightConfig, LightDevice } from "../src/devices/Light.js";
+import { LightDevice } from "../src/devices/LightDevice.js";
 
-// 1) Top‐level mock of 'mqtt' before we import anything that uses it:
-vi.mock("mqtt", () => {
-  // fakes for the MQTT client methods
-  const fakeOn = vi.fn((event: string, cb: () => void) => {
-    if (event === "connect") setImmediate(cb);
-  });
-  const fakeSubscribe = vi.fn();
-  const fakePublish = vi.fn();
+// Mock the MQTT client and its methods
+vi.mock("mqtt");
 
-  // a fake client object
-  const client = {
-    on: fakeOn,
-    subscribe: fakeSubscribe,
-    publish: fakePublish,
-  };
-
-  return {
-    // mqtt.connect() returns our fake client
-    default: {
-      connect: vi.fn(() => client),
-    },
-  };
-});
+const mockMqttClient = {
+  on: vi.fn(),
+  subscribe: vi.fn(),
+  publish: vi.fn(),
+  end: vi.fn(),
+};
 
 describe("LightDevice", () => {
-  let light: LightDevice;
-  let clientMock: ReturnType<typeof mqtt.connect>;
-  const cfg: LightConfig = { brokerUrl: "mqtt://test", deviceId: "test1" };
+  const config = { brokerUrl: "mqtt://test.mosquitto.org", deviceId: "light1" };
+  let device: LightDevice;
 
   beforeEach(() => {
-    // clear all calls on our mocks
+    // Clear all mocks and setup new client instance
     vi.clearAllMocks();
-
-    // instantiate the device—its ctor calls mqtt.connect()
-    light = new LightDevice(cfg);
-
-    // grab the fake client that our mock returned
-    clientMock = (mqtt.connect as unknown as vi.Mock).mock.results[0].value;
+    (mqtt.connect as vi.Mock).mockReturnValue(mockMqttClient);
+    device = new LightDevice(config);
   });
 
-  it("connects and subscribes to its topics", () => {
-    // mqtt.connect must have been called with the broker URL
-    expect(mqtt.connect).toHaveBeenCalledWith(cfg.brokerUrl);
-
-    // on('connect', ...) was registered
-    expect(clientMock.on).toHaveBeenCalledWith("connect", expect.any(Function));
-
-    // simulate the connect callback so subscriptions fire
-    const connectCb = (clientMock.on as vi.Mock).mock.calls.find(
-      (c) => c[0] === "connect",
-    )![1];
-    connectCb();
-
-    // now subscribe() should have been called for each topic
-    expect(clientMock.subscribe).toHaveBeenCalledWith(
-      `/home/${cfg.deviceId}/turnLight`,
-    );
-    expect(clientMock.subscribe).toHaveBeenCalledWith(
-      `/home/${cfg.deviceId}/brightness`,
-    );
-    expect(clientMock.subscribe).toHaveBeenCalledWith(
-      `/home/${cfg.deviceId}/energyMode`,
-    );
+  afterEach(() => {
+    if (device) {
+      // Cleanup if needed
+    }
   });
 
-  it("publishes status when turned on", () => {
-    // directly invoke the private handler
-    (light as any).handleMessage(`/home/${cfg.deviceId}/turnLight`, {
-      action: "on",
+  it("connects to the MQTT broker with the provided URL", () => {
+    expect(mqtt.connect).toHaveBeenCalledWith(config.brokerUrl);
+  });
+
+  it("subscribes to command topics upon connection", () => {
+    // Simulate the 'connect' event
+    const connectHandler = mockMqttClient.on.mock.calls.find(
+      (args: any[]) => args[0] === "connect",
+    )?.[1];
+    connectHandler?.();
+
+    const expectedTopics = [
+      `/home/${config.deviceId}/turnLight`,
+      `/home/${config.deviceId}/brightness`,
+      `/home/${config.deviceId}/energyMode`,
+    ];
+
+    expectedTopics.forEach((topic) => {
+      expect(mockMqttClient.subscribe).toHaveBeenCalledWith(
+        topic,
+        expect.any(Function),
+      );
     });
+  });
 
-    expect(clientMock.publish).toHaveBeenCalledWith(
-      `/home/${cfg.deviceId}/status`,
+  it('handles "turnLight on" command correctly', () => {
+    const topic = `/home/${config.deviceId}/turnLight`;
+    const message = { action: "on" };
+
+    (device as any).handleCommand(topic, message);
+
+    expect((device as any).isOn).toBe(true);
+    expect(mockMqttClient.publish).toHaveBeenCalledWith(
+      `/home/${config.deviceId}/status`,
       JSON.stringify({ action: "status", on: true }),
     );
   });
 
-  it("publishes brightnessChanged when brightness set", () => {
-    (light as any).handleMessage(`/home/${cfg.deviceId}/brightness`, {
-      brightness: 55,
-    });
+  it('handles "turnLight off" command correctly', () => {
+    const topic = `/home/${config.deviceId}/turnLight`;
+    const message = { action: "off" };
 
-    expect(clientMock.publish).toHaveBeenCalledWith(
-      `/home/${cfg.deviceId}/status`,
-      JSON.stringify({ action: "brightnessChanged", brightness: 55 }),
+    (device as any).handleCommand(topic, message);
+
+    expect((device as any).isOn).toBe(false);
+    expect(mockMqttClient.publish).toHaveBeenCalledWith(
+      `/home/${config.deviceId}/status`,
+      JSON.stringify({ action: "status", on: false }),
     );
   });
 
-  it("does not throw on unknown topic and does not publish", () => {
-    expect(() =>
-      (light as any).handleMessage(`/home/${cfg.deviceId}/foo`, { foo: 1 }),
-    ).not.toThrow();
+  it('logs warning for unknown action on "turnLight" topic', () => {
+    const topic = `/home/${config.deviceId}/turnLight`;
+    const message = { action: "toggle" };
+    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    // ensure we never published status for that unknown topic
-    expect(clientMock.publish).not.toHaveBeenCalled();
+    (device as any).handleCommand(topic, message);
+
+    expect(consoleWarn).toHaveBeenCalledWith("Unknown turn action", "toggle");
+    consoleWarn.mockRestore();
+  });
+
+  it("updates brightness and publishes status", () => {
+    const topic = `/home/${config.deviceId}/brightness`;
+    const message = { brightness: 80 };
+
+    (device as any).handleCommand(topic, message);
+
+    expect((device as any).brightness).toBe(80);
+    expect(mockMqttClient.publish).toHaveBeenCalledWith(
+      `/home/${config.deviceId}/status`,
+      JSON.stringify({ action: "brightnessChanged", brightness: 80 }),
+    );
+  });
+
+  it("updates energy mode and publishes status", () => {
+    const topic = `/home/${config.deviceId}/energyMode`;
+    const message = { mode: "eco" };
+
+    (device as any).handleCommand(topic, message);
+
+    expect((device as any).energyMode).toBe("eco");
+    expect(mockMqttClient.publish).toHaveBeenCalledWith(
+      `/home/${config.deviceId}/status`,
+      JSON.stringify({ action: "modeChanged", mode: "eco" }),
+    );
+  });
+
+  it("logs warning for unknown topic", () => {
+    const topic = `/home/${config.deviceId}/unknown`;
+    const message = { key: "value" };
+    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    (device as any).handleCommand(topic, message);
+
+    expect(consoleWarn).toHaveBeenCalledWith(
+      "LightDevice got unknown topic",
+      topic,
+    );
+    consoleWarn.mockRestore();
   });
 });
