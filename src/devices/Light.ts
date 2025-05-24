@@ -40,13 +40,26 @@ export class Light implements IDevice {
   }
   turnOn(): void {
     this.isOn = true;
+    const action = 'turnOn';
+    const status = 'OK';
+    this.communicator.publish(action, status);
   }
   turnOff(): void {
     this.isOn = false;
+    const action = 'turnOff';
+    const status = 'OK';
+    this.communicator.publish(action, status);
   }
   setBrightness(level: number): void {
-    if (level < 0 || level > 100) return;
+    const action = 'setBrightness';
+    if (level < 0 || level > 100) {
+      const status = 'NO';
+      this.communicator.publish(action, status);
+      return;
+    };
     this.brightness = level;
+    const status = 'OK';
+    this.communicator.publish(action, status);
   }
   getBrightness(): number {
     return this.brightness;
@@ -62,7 +75,7 @@ export class Light implements IDevice {
     const { cmd, arg } = action;
     const command = this.handlers[cmd];
     if (command) {
-       command(arg);
+      command(arg);
     }
   }
 }
