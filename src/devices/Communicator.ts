@@ -3,10 +3,9 @@ import type { ICommunicator } from "../interfaces/ICommunicator.js";
 
 export class MQTTCommunicator implements ICommunicator {
     private client: mqtt.MqttClient;
-    private topics: Map<string, string>;
     private clientId: string;
 
-    constructor(topics: Map<string, string>, clientId: string, brocker: string) {
+    constructor(topics: string[], clientId: string, brocker: string) {
         this.clientId = clientId;
         const willMessage = {
             topic: `/home/${this.clientId}/status`,
@@ -17,9 +16,8 @@ export class MQTTCommunicator implements ICommunicator {
             clientId: this.clientId,
             will: willMessage
         });
-        this.topics = topics;
-        for (const topic of this.topics) {
-            this.subscribe(topic[1], (err) => {
+        for (const topic of topics) {
+            this.client.subscribe(topic, (err) => {
                 if (err) console.error("MQTT subscribe error:", err);
             });
         }
@@ -34,24 +32,24 @@ export class MQTTCommunicator implements ICommunicator {
     }
 
     subscribe(topic: string, onMessage: (data: unknown) => void): void {
-        this.client.subscribe(topic, onMessage)
+        this.client.subscribe(topic, onMessage);
+        console.log("Subscribe for topic:", topic);
     }
 
     publish(action: string, status: string): void {
-        const topic = this.topics.get(action);
-        if (!topic) {
-            return;
-        }
         const payload = {
-            'action':action,
-            'status':status,
+            'clientId': this.clientId,
+            'action': action,
+            'status': status,
         };
-        this.client.publish(topic, JSON.stringify(payload));
+        this.client.publish(`/home/${this.clientId}/action`, JSON.stringify(payload));
+        console.log("Publish data to topic:", `/home/${this.clientId}/action`);
     }
 
     listen(handler: (arg0: string, arg1: Buffer) => void) {
         this.client.on("message", (topic, message) => {
             handler(topic, message);
+            console.log("Get message form topic:", topic);
         });
     }
 }
