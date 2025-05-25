@@ -7,7 +7,7 @@ const mockCommunicator = {
   subscribe: vi.fn(),
 };
 
-describe('Light', () => {
+describe('Light methods', () => {
   let light: Light;
 
   beforeEach(() => {
@@ -59,3 +59,35 @@ describe('Light', () => {
     expect(light.getBrightness()).toBe(60);
   });
 }); 
+
+describe("Light methods with communicator mock", () => {
+  it("should turn on when receiving a 'turn on' message", () => {
+    const light = new Light("light1", mockCommunicator);
+
+    const message = Buffer.from(JSON.stringify({ cmd: "turn", arg: "on" }));
+    light.handleMessage("/home/light1/action", message);
+
+    expect(light['isOn']).toBe(true);
+    expect(mockCommunicator.publish).toHaveBeenCalledWith("turnOn", "OK");
+  });
+
+  it("should set brightness correctly and publish OK", () => {
+    const light = new Light("light1", mockCommunicator);
+
+    const message = Buffer.from(JSON.stringify({ cmd: "setBrightness", arg: "75" }));
+    light.handleMessage("/home/light1/action", message);
+
+    expect(light.getBrightness()).toBe(75);
+    expect(mockCommunicator.publish).toHaveBeenCalledWith("setBrightness", "OK");
+  });
+
+  it("should not set brightness if value is invalid", () => {
+    const light = new Light("light1", mockCommunicator);
+
+    const message = Buffer.from(JSON.stringify({ cmd: "setBrightness", arg: "150" }));
+    light.handleMessage("/home/light1/action", message);
+
+    expect(light.getBrightness()).not.toBe(150);
+    expect(mockCommunicator.publish).toHaveBeenCalledWith("setBrightness", "NO");
+  });
+});

@@ -59,3 +59,4 @@ describe('Thermostat', () => {
     expect(thermostat.getTemperature()).toBe(25);
   });
 }); 
+
