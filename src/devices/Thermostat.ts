@@ -10,7 +10,7 @@ export class Thermostat implements IDevice {
 
   constructor(name: string, communicator: ICommunicator) {
     this.name = name;
-    this.type = "light";
+    this.type = "thermo";
     this.communicator = communicator;
     this.isOn = false;
   }
