@@ -13,9 +13,8 @@ const mockMqttClient = {
   end: vi.fn(),
 };
 
-describe("LightDevice", () => {
-  const config = { brokerUrl: "mqtt://test.mosquitto.org", deviceId: "light1" };
-  let device: LightDevice;
+describe("Light methods", () => {
+  let light: Light;
 
   beforeEach(() => {
     // Clear all mocks and setup new client instance
@@ -117,18 +116,46 @@ describe("LightDevice", () => {
       JSON.stringify({ action: "modeChanged", mode: "eco" }),
     );
   });
+});
 
-  it("logs warning for unknown topic", () => {
-    const topic = `/home/${config.deviceId}/unknown`;
-    const message = { key: "value" };
-    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
+describe("Light methods with communicator mock", () => {
+  it("should turn on when receiving a 'turn on' message", () => {
+    const light = new Light("light1", mockCommunicator);
 
-    (device as any).handleCommand(topic, message);
+    const message = Buffer.from(JSON.stringify({ cmd: "turn", arg: "on" }));
+    light.handleMessage("/home/light1/action", message);
 
-    expect(consoleWarn).toHaveBeenCalledWith(
-      "LightDevice got unknown topic",
-      topic,
+    expect(light["isOn"]).toBe(true);
+    expect(mockCommunicator.publish).toHaveBeenCalledWith("turnOn", "OK");
+  });
+
+  it("should set brightness correctly and publish OK", () => {
+    const light = new Light("light1", mockCommunicator);
+
+    const message = Buffer.from(
+      JSON.stringify({ cmd: "setBrightness", arg: "75" }),
     );
-    consoleWarn.mockRestore();
+    light.handleMessage("/home/light1/action", message);
+
+    expect(light.getBrightness()).toBe(75);
+    expect(mockCommunicator.publish).toHaveBeenCalledWith(
+      "setBrightness",
+      "OK",
+    );
+  });
+
+  it("should not set brightness if value is invalid", () => {
+    const light = new Light("light1", mockCommunicator);
+
+    const message = Buffer.from(
+      JSON.stringify({ cmd: "setBrightness", arg: "150" }),
+    );
+    light.handleMessage("/home/light1/action", message);
+
+    expect(light.getBrightness()).not.toBe(150);
+    expect(mockCommunicator.publish).toHaveBeenCalledWith(
+      "setBrightness",
+      "NO",
+    );
   });
 });

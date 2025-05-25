@@ -7,7 +7,7 @@ const mockCommunicator = {
   subscribe: vi.fn(),
 };
 
-describe('Thermostat', () => {
+describe('Thermostat methods', () => {
   let thermostat: Thermostat;
 
   beforeEach(() => {
@@ -59,3 +59,36 @@ describe('Thermostat', () => {
     expect(thermostat.getTemperature()).toBe(25);
   });
 }); 
+
+describe("Themostat methods with communicator mock", () => {
+  it("should turn on when receiving a 'turn on' message", () => {
+    const thermo = new Thermostat("light1", mockCommunicator);
+
+    const message = Buffer.from(JSON.stringify({ cmd: "turn", arg: "on" }));
+    thermo.handleMessage("/home/thermo1/action", message);
+
+    expect(thermo['isOn']).toBe(true);
+    expect(mockCommunicator.publish).toHaveBeenCalledWith("turnOn", "OK");
+  });
+
+  it("should set brightness correctly and publish OK", () => {
+    const thermo = new Thermostat("thermo1", mockCommunicator);
+
+    const message = Buffer.from(JSON.stringify({ cmd: "setTemperature", arg: "25" }));
+    thermo.handleMessage("/home/thermo1/action", message);
+
+    expect(thermo.getTemperature()).toBe(25);
+    expect(mockCommunicator.publish).toHaveBeenCalledWith("setTemperature", "OK");
+  });
+
+  it("should not set brightness if value is invalid", () => {
+    const thermo = new Thermostat("thermo1", mockCommunicator);
+
+    const message = Buffer.from(JSON.stringify({ cmd: "setTemperature", arg: "50" }));
+    thermo.handleMessage("/home/thermo1/action", message);
+
+    expect(thermo.getTemperature()).not.toBe(50);
+    expect(mockCommunicator.publish).toHaveBeenCalledWith("setTemperature", "NO");
+  });
+});
+
