@@ -1,120 +1,62 @@
-// src/devices/LightDevice.test.ts
-import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
-import mqtt from "mqtt";
-import { LightDevice } from "../src/devices/LightDevice.js";
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { Light } from '../src/devices/Light.js';
 
-// Mock the MQTT client and its methods
-vi.mock("mqtt");
-
-const mockMqttClient = {
-  on: vi.fn(),
-  subscribe: vi.fn(),
+// Мокаємо ICommunicator
+const mockCommunicator = {
   publish: vi.fn(),
-  end: vi.fn(),
+  subscribe: vi.fn(),
 };
 
-describe("Light methods", () => {
+describe('Light methods', () => {
   let light: Light;
 
   beforeEach(() => {
-    // Clear all mocks and setup new client instance
-    vi.clearAllMocks();
-    (mqtt.connect as vi.Mock).mockReturnValue(mockMqttClient);
-    device = new LightDevice(config);
+    light = new Light('Test Light', mockCommunicator);
   });
 
-  afterEach(() => {
-    if (device) {
-      // Cleanup if needed
-    }
+  it('should be off by default', () => {
+    // @ts-ignore
+    expect(light.isOn).toBe(false);
   });
 
-  it("connects to the MQTT broker with the provided URL", () => {
-    expect(mqtt.connect).toHaveBeenCalledWith(config.brokerUrl);
+  it('should turn on', () => {
+    light.turnOn();
+    // @ts-ignore
+    expect(light.isOn).toBe(true);
   });
 
-  it("subscribes to command topics upon connection", () => {
-    // Simulate the 'connect' event
-    const connectHandler = mockMqttClient.on.mock.calls.find(
-      (args: any[]) => args[0] === "connect",
-    )?.[1];
-    connectHandler?.();
-
-    const expectedTopics = [
-      `/home/${config.deviceId}/turnLight`,
-      `/home/${config.deviceId}/brightness`,
-      `/home/${config.deviceId}/energyMode`,
-    ];
-
-    expectedTopics.forEach((topic) => {
-      expect(mockMqttClient.subscribe).toHaveBeenCalledWith(
-        topic,
-        expect.any(Function),
-      );
-    });
+  it('should turn off', () => {
+    light.turnOn();
+    light.turnOff();
+    // @ts-ignore
+    expect(light.isOn).toBe(false);
   });
 
-  it('handles "turnLight on" command correctly', () => {
-    const topic = `/home/${config.deviceId}/turnLight`;
-    const message = { action: "on" };
-
-    (device as any).handleCommand(topic, message);
-
-    expect((device as any).isOn).toBe(true);
-    expect(mockMqttClient.publish).toHaveBeenCalledWith(
-      `/home/${config.deviceId}/status`,
-      JSON.stringify({ action: "status", on: true }),
-    );
+  it('should set brightness (TDD)', () => {
+    light.setBrightness(80);
+    expect(light.getBrightness()).toBe(80);
   });
 
-  it('handles "turnLight off" command correctly', () => {
-    const topic = `/home/${config.deviceId}/turnLight`;
-    const message = { action: "off" };
-
-    (device as any).handleCommand(topic, message);
-
-    expect((device as any).isOn).toBe(false);
-    expect(mockMqttClient.publish).toHaveBeenCalledWith(
-      `/home/${config.deviceId}/status`,
-      JSON.stringify({ action: "status", on: false }),
-    );
+  it('should set brightness to min value', () => {
+    light.setBrightness(0);
+    expect(light.getBrightness()).toBe(0);
   });
 
-  it('logs warning for unknown action on "turnLight" topic', () => {
-    const topic = `/home/${config.deviceId}/turnLight`;
-    const message = { action: "toggle" };
-    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-    (device as any).handleCommand(topic, message);
-
-    expect(consoleWarn).toHaveBeenCalledWith("Unknown turn action", "toggle");
-    consoleWarn.mockRestore();
+  it('should set brightness to max value', () => {
+    light.setBrightness(100);
+    expect(light.getBrightness()).toBe(100);
   });
 
-  it("updates brightness and publishes status", () => {
-    const topic = `/home/${config.deviceId}/brightness`;
-    const message = { brightness: 80 };
-
-    (device as any).handleCommand(topic, message);
-
-    expect((device as any).brightness).toBe(80);
-    expect(mockMqttClient.publish).toHaveBeenCalledWith(
-      `/home/${config.deviceId}/status`,
-      JSON.stringify({ action: "brightnessChanged", brightness: 80 }),
-    );
+  it('should not set brightness to negative value (optional)', () => {
+    light.setBrightness(-10);
+    expect(light.getBrightness()).not.toBe(-10);
   });
 
-  it("updates energy mode and publishes status", () => {
-    const topic = `/home/${config.deviceId}/energyMode`;
-    const message = { mode: "eco" };
-
-    (device as any).handleCommand(topic, message);
-
-    expect((device as any).energyMode).toBe("eco");
-    expect(mockMqttClient.publish).toHaveBeenCalledWith(
-      `/home/${config.deviceId}/status`,
-      JSON.stringify({ action: "modeChanged", mode: "eco" }),
-    );
+  it('should keep brightness after turnOn/turnOff', () => {
+    light.setBrightness(60);
+    light.turnOn();
+    light.turnOff();
+    expect(light.getBrightness()).toBe(60);
   });
 });
 
@@ -125,37 +67,27 @@ describe("Light methods with communicator mock", () => {
     const message = Buffer.from(JSON.stringify({ cmd: "turn", arg: "on" }));
     light.handleMessage("/home/light1/action", message);
 
-    expect(light["isOn"]).toBe(true);
+    expect(light['isOn']).toBe(true);
     expect(mockCommunicator.publish).toHaveBeenCalledWith("turnOn", "OK");
   });
 
   it("should set brightness correctly and publish OK", () => {
     const light = new Light("light1", mockCommunicator);
 
-    const message = Buffer.from(
-      JSON.stringify({ cmd: "setBrightness", arg: "75" }),
-    );
+    const message = Buffer.from(JSON.stringify({ cmd: "setBrightness", arg: "75" }));
     light.handleMessage("/home/light1/action", message);
 
     expect(light.getBrightness()).toBe(75);
-    expect(mockCommunicator.publish).toHaveBeenCalledWith(
-      "setBrightness",
-      "OK",
-    );
+    expect(mockCommunicator.publish).toHaveBeenCalledWith("setBrightness", "OK");
   });
 
   it("should not set brightness if value is invalid", () => {
     const light = new Light("light1", mockCommunicator);
 
-    const message = Buffer.from(
-      JSON.stringify({ cmd: "setBrightness", arg: "150" }),
-    );
+    const message = Buffer.from(JSON.stringify({ cmd: "setBrightness", arg: "150" }));
     light.handleMessage("/home/light1/action", message);
 
     expect(light.getBrightness()).not.toBe(150);
-    expect(mockCommunicator.publish).toHaveBeenCalledWith(
-      "setBrightness",
-      "NO",
-    );
+    expect(mockCommunicator.publish).toHaveBeenCalledWith("setBrightness", "NO");
   });
 });

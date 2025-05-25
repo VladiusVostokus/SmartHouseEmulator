@@ -1,23 +1,49 @@
-// src/index.ts
-import { LightDevice, type LightConfig } from "../devices/LightDevice.js";
-import { startHttpServer } from "./server.js";
+import { serve } from "@hono/node-server";
+import { Hono } from "hono";
+import { sendLightCommand } from "./mqtt.js";
 
-async function bootstrap() {
-  // 1) Instantiate as many emulated lights as you like:
-  const configs: LightConfig[] = [
-    { brokerUrl: "mqtt://localhost:1883", deviceId: "lamp1" },
-    { brokerUrl: "mqtt://localhost:1883", deviceId: "lamp2" },
-    // add more if needed…
-  ];
-  for (const cfg of configs) {
-    new LightDevice(cfg);
+const app = new Hono();
+
+app.get("/", (c) => {
+  return c.text("Hello Hono!");
+});
+
+app.post("/light/:deviceId/:action", async (c) => {
+  const { deviceId, action } = c.req.param();
+
+  if (action !== "turnOn" && action !== "turnOff") {
+    return c.text("Invalid action", 400);
   }
 
-  // 2) Then start your HTTP→MQTT server
-  startHttpServer();
-}
-
-bootstrap().catch((err) => {
-  console.error("❌ Failed to bootstrap:", err);
-  process.exit(1);
+  sendLightCommand(deviceId, action as "turnOn" | "turnOff");
+  return c.text(`Sent ${action} to ${deviceId}`);
 });
+
+app.post("/thermostat/:deviceId/:action", async (c) => {
+  const { deviceId, action } = c.req.param();
+
+  if (action !== "turnOn" && action !== "turnOff") {
+    return c.text("Invalid action", 400);
+  }
+
+  // Тут буде логіка для термостата
+  return c.text(`Sent ${action} to thermostat ${deviceId}`);
+});
+
+app.post("/thermostat/:deviceId/setTemperature", async (c) => {
+  const { deviceId } = c.req.param();
+  const { temperature } = await c.req.json();
+
+  // Тут буде логіка для зміни температури
+  return c.text(`Set temperature of thermostat ${deviceId} to ${temperature}`);
+});
+
+serve(
+  {
+    fetch: app.fetch,
+    port: 3000,
+  },
+  (info) => {
+    console.log(`Server is running on http://localhost:${info.port}`);
+  },
+);

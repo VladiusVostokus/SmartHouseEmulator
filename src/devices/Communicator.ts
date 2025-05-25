@@ -23,11 +23,11 @@ export class MQTTCommunicator implements ICommunicator {
         }
         this.client.on('connect', () => {
             console.log('Connected to broker');
-            this.client.publish(`/home/${this.clientId}/status`, 
+            this.client.publish(`/home/${this.clientId}/status`,
                 JSON.stringify({ clientId: this.clientId, status: 'online' }), {
                 qos: 1,
                 retain: true
-            }); 
+            });
         });
     }
 

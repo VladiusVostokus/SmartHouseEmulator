@@ -58,7 +58,7 @@ describe('Thermostat methods', () => {
     thermostat.turnOff();
     expect(thermostat.getTemperature()).toBe(25);
   });
-}); 
+});
 
 describe("Themostat methods with communicator mock", () => {
   it("should turn on when receiving a 'turn on' message", () => {
@@ -91,4 +91,3 @@ describe("Themostat methods with communicator mock", () => {
     expect(mockCommunicator.publish).toHaveBeenCalledWith("setTemperature", "NO");
   });
 });
-
