@@ -3,14 +3,19 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/core/index.ts",
-    "build": "tsc",
+    "build": "tsc --build",
     "start": "node dist/core/index.js",
+    "clean": "rimraf dist packages/*/dist",
     "test": "vitest",
-    "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix",
-    "format": "prettier --check \"src/**/*.{ts,js,json}\"",
-    "format:fix": "prettier --write \"src/**/*.{ts,js,json}\""
+    "lint": "eslint \"src/**/*.ts\" \"packages/*/src/**/*.ts\"",
+    "lint:fix": "eslint --fix \"src/**/*.ts\" \"packages/*/src/**/*.ts\"",
+    "format": "prettier --check \"src/**/*.{ts,js,json}\" \"packages/**/*.{ts,js,json}\"",
+    "format:fix": "prettier --write \"src/**/*.{ts,js,json}\" \"packages/**/*.{ts,js,json}\""
   },
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "dependencies": {
     "@hono/node-server": "^1.14.1",
     "hono": "^4.7.8",

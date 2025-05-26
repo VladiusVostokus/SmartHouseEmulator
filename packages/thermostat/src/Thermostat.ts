@@ -1,35 +1,34 @@
-import type { ICommunicator } from "../interfaces/ICommunicator.ts";
-import type { IDevice } from "../interfaces/IDevice.ts";
+import type { ICommunicator, IDevice } from "@smart-house/common";
 
-export class Light implements IDevice {
+export class Thermostat implements IDevice {
   private name: string;
   private type: string;
   private isOn: boolean;
-  private brightness: number = 100;
   private communicator: ICommunicator;
+  private temperature: number = 22;
 
   constructor(name: string, communicator: ICommunicator) {
     this.name = name;
-    this.type = "light";
+    this.type = "thermo";
     this.communicator = communicator;
     this.isOn = false;
   }
 
   private handlers: { [key: string]: (arg: string) => void } = {
-      'turn': (arg: string) => {
-        if (arg === "on") this.turnOn();
-        else if (arg === "off") this.turnOff();
-        else console.warn("Unknown turn action:", arg);
-      },
+    turn: (arg: string) => {
+      if (arg === "on") this.turnOn();
+      else if (arg === "off") this.turnOff();
+      else console.warn("Unknown turn action:", arg);
+    },
 
-      'setBrightness': (arg: string) => {
-        try {
-          const brightness = Number(arg);
-          this.setBrightness(brightness);
-        } catch (e) {
-          console.error("Unknown brightness value:", e);
-        }
-      },
+    setTemperature: (arg: string) => {
+      try {
+        const brightness = Number(arg);
+        this.setTemperature(brightness);
+      } catch (e) {
+        console.error("Unknown brightness value:", e);
+      }
+    },
   };
 
   subscribe(topic: string): void {
@@ -40,30 +39,31 @@ export class Light implements IDevice {
   }
   turnOn(): void {
     this.isOn = true;
-    const action = 'turnOn';
-    const status = 'OK';
+    const action = "turnOn";
+    const status = "OK";
     this.communicator.publish(action, status);
   }
   turnOff(): void {
     this.isOn = false;
-    const action = 'turnOff';
-    const status = 'OK';
+    const action = "turnOff";
+    const status = "OK";
     this.communicator.publish(action, status);
   }
-  setBrightness(level: number): void {
-    const action = 'setBrightness';
-    if (level < 0 || level > 100) {
-      const status = 'NO';
+  setTemperature(temp: number): void {
+    const action = "setTemperature";
+    if (temp < 16 || temp > 35) {
+      const status = "NO";
       this.communicator.publish(action, status);
       return;
-    };
-    this.brightness = level;
-    const status = 'OK';
+    }
+    this.temperature = temp;
+    const status = "OK";
     this.communicator.publish(action, status);
   }
-  getBrightness(): number {
-    return this.brightness;
+  getTemperature(): number {
+    return this.temperature;
   }
+
   handleMessage(topic: string, message: Buffer) {
     let action;
     try {

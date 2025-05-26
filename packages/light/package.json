@@ -1,0 +1,23 @@
+{
+  "name": "@smart-house/light",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@smart-house/common": "^1.0.0",
+    "mqtt": "^5.12.0"
+  }
+}
