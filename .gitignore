@@ -36,3 +36,21 @@ infra/mosquitto/config/pwfile
 
 # Mosquitto temporary lock files (sometimes generated)
 **/mosquitto.lock
+
+/dist
+/packages/*/dist
+
+*.tsbuildinfo
+/packages/*/*.tsbuildinfo
+
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+*.log
+
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+/coverage
