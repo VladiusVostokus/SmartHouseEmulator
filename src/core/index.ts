@@ -1,6 +1,7 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
-import { sendLightCommand } from "./mqtt.js";
+import { sendLightCommand, sendThermostatCommand, publishStatus } from "./mqtt";
+import type { LightAction, ThermostatAction } from "./types";
 
 const app = new Hono();
 
@@ -15,7 +16,14 @@ app.post("/light/:deviceId/:action", async (c) => {
     return c.text("Invalid action", 400);
   }
 
-  sendLightCommand(deviceId, action as "turnOn" | "turnOff");
+  sendLightCommand(deviceId, action as LightAction);
+  
+  publishStatus(deviceId, {
+    status: action,
+    deviceType: 'light',
+    timestamp: new Date().toISOString()
+  });
+
   return c.text(`Sent ${action} to ${deviceId}`);
 });
 
@@ -26,7 +34,14 @@ app.post("/thermostat/:deviceId/:action", async (c) => {
     return c.text("Invalid action", 400);
   }
 
-  // Тут буде логіка для термостата
+  sendThermostatCommand(deviceId, action as ThermostatAction);
+  
+  publishStatus(deviceId, {
+    status: action,
+    deviceType: 'thermostat',
+    timestamp: new Date().toISOString()
+  });
+
   return c.text(`Sent ${action} to thermostat ${deviceId}`);
 });
 
@@ -34,7 +49,15 @@ app.post("/thermostat/:deviceId/setTemperature", async (c) => {
   const { deviceId } = c.req.param();
   const { temperature } = await c.req.json();
 
-  // Тут буде логіка для зміни температури
+  sendThermostatCommand(deviceId, "setTemperature", temperature);
+  
+  publishStatus(deviceId, {
+    status: "temperatureSet",
+    temperature,
+    deviceType: 'thermostat',
+    timestamp: new Date().toISOString()
+  });
+
   return c.text(`Set temperature of thermostat ${deviceId} to ${temperature}`);
 });
 
