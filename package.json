@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/core/index.ts",
-    "build": "tsc --build",
+    "build": "tsc --build tsconfig.build.json",
     "start": "node dist/core/index.js",
     "clean": "rimraf dist packages/*/dist",
     "test": "vitest",

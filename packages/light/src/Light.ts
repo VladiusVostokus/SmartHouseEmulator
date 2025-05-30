@@ -1,4 +1,4 @@
-import type { IDevice, ICommunicator } from "@smart-house/common";
+import type { ICommunicator, IDevice } from "@smart-house/common";
 
 export class Light implements IDevice {
   private name: string;
