@@ -35,12 +35,8 @@ export class MQTTCommunicator implements ICommunicator {
         });
 
         // Підписуємось на всі статуси та дії пристроїв
-        this.client.subscribe(this.topicTemplates.status, (err) => {
-            if (err) console.error("MQTT subscribe error for status:", err);
-        });
-
-        this.client.subscribe(this.topicTemplates.action, (err) => {
-            if (err) console.error("MQTT subscribe error for action:", err);
+        this.client.subscribe([this.topicTemplates.status, this.topicTemplates.action], (err) => {
+            if (err) console.error("MQTT subscribe error:", err);
         });
 
         this.client.on('connect', () => {
@@ -120,6 +116,6 @@ export class MQTTCommunicator implements ICommunicator {
     }
 
     public getDeviceStatus(deviceId: string): string {
-        return this.deviceStates.get(deviceId)?.status || 'unknown';
+        return this.getDeviceState(deviceId)?.status || 'unknown';
     }
 }
