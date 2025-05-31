@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { Light } from "../src/Light.js";
+import { Light } from "../src/light.js";
 
 // Мокаємо ICommunicator
 const mockCommunicator = {

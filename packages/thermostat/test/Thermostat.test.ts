@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { Thermostat } from "../src/Thermostat.js";
+import { Thermostat } from "../src/thermostat.js";
 
 // Мокаємо ICommunicator
 const mockCommunicator = {

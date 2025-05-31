@@ -1,3 +1,3 @@
 export * from "./interfaces/device.interface";
 export * from "./interfaces/communicator.interface";
-export * from "./classes/communicator.class";
+//# sourceMappingURL=index.d.ts.map

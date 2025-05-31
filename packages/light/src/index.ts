@@ -1,1 +1,1 @@
-export { Light } from "./Light";
+export { Light } from "./light";

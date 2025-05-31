@@ -31,12 +31,6 @@ export class Thermostat implements IDevice {
     },
   };
 
-  subscribe(topic: string): void {
-    throw new Error("Method not implemented.");
-  }
-  publish(topic: string): void {
-    throw new Error("Method not implemented.");
-  }
   turnOn(): void {
     this.isOn = true;
     const action = "turnOn";
