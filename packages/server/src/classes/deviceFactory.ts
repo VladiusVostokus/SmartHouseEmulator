@@ -1,6 +1,5 @@
-import type { DeviceConstructor } from "../devices/devicesCollection.ts";
-import type { ICommunicator } from "../interfaces/ICommunicator.ts";
-import type { IDevice } from "../interfaces/IDevice.ts";
+import type { ICommunicator, IDevice } from "@smart-house/common";
+import type { DeviceConstructor } from "../types/devicesCollection";
 
 export class DeviceFactory {
   deviceCollection: Record<string, DeviceConstructor>;

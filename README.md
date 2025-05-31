@@ -47,23 +47,61 @@ To stop the broker:
 docker-compose down
 ```
 
-## 3. Start Hono.js Backend
+## 3. Monorepo Structure
 
-1. Install dependencies:
+This repository now uses a npm workspace–based monorepo. All of our “packages” live under `packages/`:
 
-```bash
-npm install
+```
+packages/
+├─ common/ ← shared interfaces & utils
+│ ├─ src/ ← TypeScript source
+│ └─ dist/ ← compiled ESM output
+├─ light/ ← Light-device emulator
+│ ├─ src/ ← TS source including `Light.ts` & `cli.ts`
+│ └─ dist/ ← compiled output + entrypoint `index.js`, `cli.js`
+├─ thermostat/ ← Thermostat-device emulator
+│ └─ … same layout as `light/` …
+└─ server/ ← Hono.js backend
 ```
 
-2. Run in development mode:
+At the repo root:
 
-```bash
-npm run dev
+```
+infra/ ← Docker & Mosquitto config
+docker-compose.yaml
 ```
 
-By default, the server will start on `http://localhost:3000`
+## 4. Building & Running Device Emulators
 
-## 4. Testing the Setup
+Whenever you add or change code in **any** package, do:
+
+```bash
+# from repo root
+npm install             # link all workspaces
+npm run build           # runs `tsc --build` across packages in correct order
+```
+
+### Light emulator
+
+```bash
+# build only the Light package
+npx tsc --build packages/light
+
+# start the Light device client
+npm --prefix packages/light run start
+```
+
+### Thermostat emulator
+
+```bash
+# build only the Thermostat package
+npx tsc --build packages/thermostat
+
+# start the Thermostat device client
+npm --prefix packages/thermostat run start
+```
+
+## 5. Testing the Setup
 
 1. Subscribe to all topics (in a separate terminal):
 
@@ -89,30 +127,40 @@ curl -X POST http://localhost:3000/light/hallway-light-1/turnOn
 
 You should see the published MQTT messages in the subscriber terminal, and logs in your Hono.js console.
 
-## 5. Code Quality & Testing
+## 6. Code Quality & Testing
 
 ### Run ESLint (Code Linting)
+
 Check for code issues:
+
 ```bash
 npm run lint
 ```
+
 Automatically fix fixable issues:
+
 ```bash
 npm run lint:fix
 ```
 
 ### Run Prettier (Code Formatting)
+
 Check formatting:
+
 ```bash
 npm run format
 ```
+
 Automatically format code:
+
 ```bash
 npm run format:fix
 ```
 
 ### Run Tests
+
 Run all tests:
+
 ```bash
 npm test
 ```
