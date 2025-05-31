@@ -1,31 +1,7 @@
-// tsconfig.json
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "noEmit": true
-  }
+  },
+  "include": ["src/**/*.ts"]
 }
-
-// {
-//   "compilerOptions": {
-//     "target": "ESNext",
-//     "module": "ESNext",
-//     "noEmit": true,
-//     "strict": true,
-//     "verbatimModuleSyntax": true,
-//     "skipLibCheck": true,
-//     "types": ["node"],
-//     "jsx": "react-jsx",
-//     "jsxImportSource": "hono/jsx",
-//     "outDir": "./dist",
-//     "baseUrl": ".",
-//     "moduleResolution": "bundler"
-//   },
-//   "references": [
-//     { "path": "packages/common" },
-//     { "path": "packages/light" },
-//     { "path": "packages/thermostat" },
-//     { "path": "packages/server" }
-//   ],
-//   "exclude": ["node_modules"]
-// }
