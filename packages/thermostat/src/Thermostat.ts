@@ -6,6 +6,7 @@ export class Thermostat implements IDevice {
   private isOn: boolean;
   private communicator: ICommunicator;
   private temperature: number = 22;
+  private curTemperature: number = 22;
 
   constructor(name: string, communicator: ICommunicator) {
     this.name = name;
@@ -77,5 +78,21 @@ export class Thermostat implements IDevice {
     if (command) {
       command(arg);
     }
+  }
+
+  emulateTemperatureChange() {
+    const time = this.random(5000, 10000);
+    let temperatureChange = this.random(-3, 3);
+    setInterval(() => {
+      this.curTemperature += temperatureChange;
+      if (this.curTemperature < 16 || this.curTemperature > 35) {
+        this.setTemperature(this.temperature);
+        temperatureChange = this.random(-3, 3);
+      }
+    }, time);
+  }
+
+  private random(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 }
