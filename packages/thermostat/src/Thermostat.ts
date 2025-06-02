@@ -58,11 +58,16 @@ export class Thermostat implements IDevice {
       return;
     }
     this.temperature = temp;
+    this.curTemperature = temp;
     const status = "OK";
     this.communicator.publish(action, status);
   }
   getTemperature(): number {
     return this.temperature;
+  }
+
+  getCurTemperature(): number {
+    return this.curTemperature;
   }
 
   handleMessage(topic: string, message: Buffer) {
@@ -80,16 +85,15 @@ export class Thermostat implements IDevice {
     }
   }
 
-  emulateTemperatureChange() {
-    const time = this.random(5000, 10000);
-    let temperatureChange = this.random(-3, 3);
+  emulateTemperatureChange(deltaTemp: number, deltaTime: number) {
+    let temperatureChange = this.random(-deltaTemp, deltaTemp);
     setInterval(() => {
       this.curTemperature += temperatureChange;
       if (this.curTemperature < 16 || this.curTemperature > 35) {
         this.setTemperature(this.temperature);
-        temperatureChange = this.random(-3, 3);
+        temperatureChange = this.random(-deltaTemp, deltaTemp);
       }
-    }, time);
+    }, deltaTime);
   }
 
   private random(min: number, max: number): number {

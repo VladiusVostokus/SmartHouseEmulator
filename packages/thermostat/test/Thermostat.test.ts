@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { Thermostat } from "../src/Thermostat.js";
 
 // Мокаємо ICommunicator
@@ -99,5 +99,39 @@ describe("Themostat methods with communicator mock", () => {
       "setTemperature",
       "NO",
     );
+  });
+});
+
+describe("Thermostat changing temperature depending in environment temprerature", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+ 
+  it("should change curTemperature after interval", () => {
+    const thermo = new Thermostat("thermo1", mockCommunicator);
+    const initialTemp = thermo.getCurTemperature()
+
+    thermo.emulateTemperatureChange(2, 1000);
+
+    vi.advanceTimersByTime(1001);
+
+    const changedTemp = thermo.getCurTemperature();
+    expect(changedTemp).not.toBe(initialTemp);
+  });
+
+  it("should change curTemperature if curTemperatur is to low or to hight", () => {
+    const thermo = new Thermostat("thermo1", mockCommunicator);
+
+    thermo.emulateTemperatureChange(100, 1000);
+
+    vi.advanceTimersByTime(1001);
+
+    const changedTemp = thermo.getCurTemperature();
+    const expectedTemp = thermo.getTemperature();
+    expect(changedTemp).toBe(expectedTemp);
   });
 });
