@@ -7,6 +7,7 @@ export class Thermostat implements IDevice {
   private communicator: ICommunicator;
   private temperature: number = 22;
   private curTemperature: number = 22;
+  private simulationTimer: NodeJS.Timeout | null = null;
 
   constructor(name: string, communicator: ICommunicator) {
     this.name = name;
@@ -87,13 +88,24 @@ export class Thermostat implements IDevice {
 
   emulateTemperatureChange(deltaTemp: number, deltaTime: number) {
     let temperatureChange = this.random(-deltaTemp, deltaTemp);
-    setInterval(() => {
+    this.simulationTimer = setInterval(() => {
       this.curTemperature += temperatureChange;
       if (this.curTemperature < 16 || this.curTemperature > 35) {
         this.setTemperature(this.temperature);
         temperatureChange = this.random(-deltaTemp, deltaTemp);
       }
     }, deltaTime);
+  }
+
+  stopSimulation() {
+    if (this.simulationTimer) {
+      clearTimeout(this.simulationTimer);
+      this.simulationTimer = null;
+    }
+  }
+
+  getTimer() {
+    return this.simulationTimer;
   }
 
   private random(min: number, max: number): number {

@@ -134,4 +134,12 @@ describe("Thermostat changing temperature depending in environment temprerature"
     const expectedTemp = thermo.getTemperature();
     expect(changedTemp).toBe(expectedTemp);
   });
+
+  it("should stop timer if simulation stopped", () => {
+    const thermo = new Thermostat("thermo1", mockCommunicator);
+
+    thermo.emulateTemperatureChange(1, 1);
+    thermo.stopSimulation();
+    expect(thermo.getTimer()).toBeNull();
+  });
 });
