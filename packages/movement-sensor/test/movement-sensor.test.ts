@@ -1,18 +1,10 @@
-import {
-  describe,
-  it,
-  expect,
-  beforeEach,
-  afterEach,
-  vi,
-  type Mock,
-} from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { MovementSensor } from "../src/movement-sensor.js";
+import type { MovementSensorConfig } from "../src/interfaces/movement-sensor-config.interface.js";
 import type { ICommunicator } from "@smart-house/common";
 
 const mockPublishFn = vi.fn();
 const mockSubscribeFn = vi.fn();
-
 const mockCommunicator: ICommunicator = {
   publish: mockPublishFn,
   subscribe: mockSubscribeFn,
@@ -21,6 +13,11 @@ const mockCommunicator: ICommunicator = {
 describe("MovementSensor", () => {
   let sensor: MovementSensor;
   const sensorName = "TestSensor";
+  const defaultConfig: MovementSensorConfig = {
+    minIntervalMs: 100,
+    maxIntervalMs: 200,
+    detectionProbability: 1.0,
+  };
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -29,8 +26,7 @@ describe("MovementSensor", () => {
 
     mockPublishFn.mockClear();
     mockSubscribeFn.mockClear();
-
-    sensor = new MovementSensor(sensorName, mockCommunicator);
+    sensor = new MovementSensor(sensorName, mockCommunicator, defaultConfig);
   });
 
   afterEach(() => {
@@ -39,92 +35,190 @@ describe("MovementSensor", () => {
     vi.useRealTimers();
   });
 
-  it("should be off by default and turn on/off correctly, publishing status", () => {
-    // @ts-ignore
-    expect(sensor.isOn).toBe(false);
+  describe("Power Control (turnOn/turnOff)", () => {
+    it("turnOn() should turn the sensor on, publish status, and return true if previously off", () => {
+      const result = sensor.turnOn();
+      expect(result).toBe(true);
+      expect(sensor.isOn).toBe(true);
+      expect(mockPublishFn).toHaveBeenCalledWith("turnOn", "OK");
+    });
 
-    sensor.turnOn();
-    // @ts-ignore
-    expect(sensor.isOn).toBe(true);
-    expect(mockPublishFn).toHaveBeenCalledWith("turnOn", "OK");
+    it("turnOn() should do nothing and return false if already on", () => {
+      sensor.turnOn();
+      mockPublishFn.mockClear();
+      const result = sensor.turnOn();
+      expect(result).toBe(false);
+      expect(mockPublishFn).not.toHaveBeenCalled();
+    });
 
-    mockPublishFn.mockClear();
-    sensor.turnOff();
-    // @ts-ignore
-    expect(sensor.isOn).toBe(false);
-    expect(mockPublishFn).toHaveBeenCalledWith("turnOff", "OK");
+    it("turnOff() should turn the sensor off, stop simulation, publish status, and return true if previously on", () => {
+      sensor.turnOn();
+      sensor.startSimulation();
+      expect(sensor.isSimulating).toBe(true);
+      mockPublishFn.mockClear();
+
+      const result = sensor.turnOff();
+      expect(result).toBe(true);
+      expect(sensor.isOn).toBe(false);
+      expect(sensor.isSimulating).toBe(false);
+      expect(mockPublishFn).toHaveBeenCalledWith("turnOff", "OK");
+    });
+
+    it("turnOff() should do nothing and return false if already off", () => {
+      const result = sensor.turnOff();
+      expect(result).toBe(false);
+      expect(mockPublishFn).not.toHaveBeenCalled();
+    });
   });
 
-  it("should handle 'turn' commands from messages", () => {
-    sensor.handleMessage(
-      "",
-      Buffer.from(JSON.stringify({ cmd: "turn", arg: "on" })),
-    );
-    // @ts-expect-error
-    expect(sensor.isOn).toBe(true);
-    expect(mockPublishFn).toHaveBeenCalledWith("turnOn", "OK");
+  describe("Simulation Control (startSimulation/stopSimulation)", () => {
+    it("startSimulation() should not start if sensor is off and return false", () => {
+      const result = sensor.startSimulation();
+      expect(result).toBe(false);
+      expect(sensor.isSimulating).toBe(false);
+    });
 
-    mockPublishFn.mockClear(); // Clear before next action
-    sensor.handleMessage(
-      "",
-      Buffer.from(JSON.stringify({ cmd: "turn", arg: "off" })),
-    );
-    // @ts-ignore
-    expect(sensor.isOn).toBe(false);
-    expect(mockPublishFn).toHaveBeenCalledWith("turnOff", "OK");
+    it("startSimulation() should start if sensor is on, not already simulating, and return true", () => {
+      sensor.turnOn();
+      mockPublishFn.mockClear();
+
+      const result = sensor.startSimulation();
+      expect(result).toBe(true);
+      expect(sensor.isSimulating).toBe(true);
+    });
+
+    it("startSimulation() should do nothing and return false if already simulating", () => {
+      sensor.turnOn();
+      sensor.startSimulation();
+      const result = sensor.startSimulation();
+      expect(result).toBe(false);
+    });
+
+    it("stopSimulation() should stop an active simulation and return true", () => {
+      sensor.turnOn();
+      sensor.startSimulation();
+      expect(sensor.isSimulating).toBe(true);
+
+      const result = sensor.stopSimulation();
+      expect(result).toBe(true);
+      expect(sensor.isSimulating).toBe(false);
+    });
+
+    it("stopSimulation() should do nothing and return false if not simulating", () => {
+      const result = sensor.stopSimulation();
+      expect(result).toBe(false);
+    });
   });
 
-  it("should start simulation only if on, and stop simulation", () => {
-    sensor.startSimulation();
-    // @ts-ignore
-    expect(sensor.simulationTimer).toBeNull();
+  describe("Message Handling", () => {
+    it("should turn sensor on via 'turn on' message", () => {
+      sensor.handleMessage(
+        "",
+        Buffer.from(JSON.stringify({ cmd: "turn", arg: "on" })),
+      );
+      expect(sensor.isOn).toBe(true);
+      expect(mockPublishFn).toHaveBeenCalledWith("turnOn", "OK");
+    });
 
-    sensor.turnOn();
-    mockPublishFn.mockClear();
+    it("should turn sensor off via 'turn off' message", () => {
+      sensor.turnOn();
+      mockPublishFn.mockClear();
 
-    sensor.startSimulation();
-    // @ts-ignore
-    expect(sensor.simulationTimer).not.toBeNull();
+      sensor.handleMessage(
+        "",
+        Buffer.from(JSON.stringify({ cmd: "turn", arg: "off" })),
+      );
+      expect(sensor.isOn).toBe(false);
+      expect(sensor.isSimulating).toBe(false);
+      expect(mockPublishFn).toHaveBeenCalledWith("turnOff", "OK");
+    });
 
-    sensor.stopSimulation();
-    // @ts-ignore
-    expect(sensor.simulationTimer).toBeNull();
+    it("should warn on unknown 'turn' argument", () => {
+      sensor.handleMessage(
+        "",
+        Buffer.from(JSON.stringify({ cmd: "turn", arg: "blah" })),
+      );
+      expect(console.warn).toHaveBeenCalledWith(
+        `[${sensorName}] Unknown 'turn' argument: blah`,
+      );
+    });
+
+    it("should warn on unknown command", () => {
+      sensor.handleMessage(
+        "",
+        Buffer.from(JSON.stringify({ cmd: "unknown", arg: "test" })),
+      );
+      expect(console.warn).toHaveBeenCalledWith(
+        `[${sensorName}] Unknown command 'unknown' received.`,
+      );
+    });
+
+    it("should warn on invalid JSON message", () => {
+      sensor.handleMessage("", Buffer.from("not valid json"));
+      expect(console.warn).toHaveBeenCalledWith(
+        `[${sensorName}] Invalid JSON on topic : not valid json`,
+        expect.any(Error),
+      );
+    });
   });
 
-  it("simulation should periodically attempt to detect motion and publish if sensor is on", () => {
-    vi.spyOn(global.Math, "random").mockReturnValue(0.4);
+  describe("Simulation Behavior", () => {
+    it("should periodically publish 'motionDetected' when simulating and on", () => {
+      sensor.turnOn();
+      sensor.startSimulation();
+      mockPublishFn.mockClear();
 
-    sensor.turnOn();
-    mockPublishFn.mockClear();
+      vi.advanceTimersByTime(defaultConfig.maxIntervalMs! + 100);
+      expect(mockPublishFn).toHaveBeenCalledWith("motionDetected", "DETECTED");
 
-    sensor.startSimulation();
+      mockPublishFn.mockClear();
+      vi.advanceTimersByTime(defaultConfig.maxIntervalMs! + 100);
+      expect(mockPublishFn).toHaveBeenCalledWith("motionDetected", "DETECTED");
+    });
 
-    const detectionInterval = 15000;
-    vi.advanceTimersByTime(detectionInterval + 100);
+    it("should not publish 'motionDetected' if simulation is started but sensor is turned off", () => {
+      sensor.turnOn();
+      sensor.startSimulation();
+      mockPublishFn.mockClear();
 
-    expect(mockPublishFn).toHaveBeenCalledTimes(1);
-    expect(mockPublishFn).toHaveBeenCalledWith("motionDetected", "DETECTED");
+      sensor.turnOff();
+      mockPublishFn.mockClear();
 
-    mockPublishFn.mockClear();
+      vi.advanceTimersByTime(defaultConfig.maxIntervalMs! + 100);
+      expect(mockPublishFn).not.toHaveBeenCalledWith(
+        "motionDetected",
+        "DETECTED",
+      );
+    });
 
-    sensor.turnOff();
-    expect(mockPublishFn).toHaveBeenCalledWith("turnOff", "OK");
-    mockPublishFn.mockClear(); /
+    it("should not publish 'motionDetected' if simulation is stopped", () => {
+      sensor.turnOn();
+      sensor.startSimulation();
+      mockPublishFn.mockClear();
 
-    vi.advanceTimersByTime(detectionInterval + 100);
-    expect(mockPublishFn).not.toHaveBeenCalled();
-  });
+      sensor.stopSimulation();
 
-  it("should not publish motion if detectMotion is called when sensor is off", () => {
-    // @ts-expect-error
-    sensor.detectMotion();
-    expect(mockPublishFn).not.toHaveBeenCalled();
+      vi.advanceTimersByTime(defaultConfig.maxIntervalMs! + 100);
+      expect(mockPublishFn).not.toHaveBeenCalledWith(
+        "motionDetected",
+        "DETECTED",
+      );
+    });
 
-    sensor.turnOn();
-    mockPublishFn.mockClear();
+    it("should respect detectionProbability (when probability is 0)", () => {
+      const noDetectSensor = new MovementSensor(sensorName, mockCommunicator, {
+        ...defaultConfig,
+        detectionProbability: 0.0,
+      });
+      noDetectSensor.turnOn();
+      noDetectSensor.startSimulation();
+      mockPublishFn.mockClear();
 
-    // @ts-expect-error
-    sensor.detectMotion();
-    expect(mockPublishFn).toHaveBeenCalledWith("motionDetected", "DETECTED");
+      vi.advanceTimersByTime(defaultConfig.maxIntervalMs! + 100);
+      expect(mockPublishFn).not.toHaveBeenCalledWith(
+        "motionDetected",
+        "DETECTED",
+      );
+    });
   });
 });
