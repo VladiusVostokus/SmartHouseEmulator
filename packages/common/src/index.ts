@@ -1,3 +1,3 @@
-export * from "./interfaces/device.interface";
-export * from "./interfaces/communicator.interface";
-export * from "./classes/communicator.class";
+export * from "./interfaces/device.interface.js";
+export * from "./interfaces/communicator.interface.js";
+export * from "./classes/communicator.class.js";
