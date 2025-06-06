@@ -110,12 +110,18 @@ describe("Thermostat changing temperature depending in environment temprerature"
   afterEach(() => {
     vi.useRealTimers();
   });
+
+  const randomMock = (min: number, max: number): number => {
+      return max;
+  }
  
   it("should change curTemperature after interval", () => {
     const thermo = new Thermostat("thermo1", mockCommunicator);
     const initialTemp = thermo.CurTemperature;
+    const deltaTemp = 2;
+    const deltaTime = 1000;
 
-    thermo.emulateTemperatureChange(2, 1000);
+    thermo.emulateTemperatureChange(deltaTemp, deltaTime, randomMock);
 
     vi.advanceTimersByTime(1001);
 
@@ -125,8 +131,10 @@ describe("Thermostat changing temperature depending in environment temprerature"
 
   it("should change curTemperature if curTemperatur is to low or to hight", () => {
     const thermo = new Thermostat("thermo1", mockCommunicator);
+    const deltaTemp = 100;
+    const deltaTime = 1000;
 
-    thermo.emulateTemperatureChange(100, 1000);
+    thermo.emulateTemperatureChange(deltaTemp, deltaTime, randomMock);
 
     vi.advanceTimersByTime(1001);
 
@@ -137,8 +145,10 @@ describe("Thermostat changing temperature depending in environment temprerature"
 
   it("should stop timer if simulation stopped", () => {
     const thermo = new Thermostat("thermo1", mockCommunicator);
+    const deltaTemp = 1;
+    const deltaTime = 1;
 
-    thermo.emulateTemperatureChange(1, 1);
+    thermo.emulateTemperatureChange(deltaTemp, deltaTime, randomMock);
     thermo.stopSimulation();
     expect(thermo.Timer).toBeNull();
   });

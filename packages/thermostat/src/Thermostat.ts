@@ -86,14 +86,14 @@ export class Thermostat implements IDevice {
     }
   }
 
-  emulateTemperatureChange(deltaTemp: number, deltaTime: number) {
-    let temperatureChange = this.random(-deltaTemp, deltaTemp);
+  emulateTemperatureChange(deltaTemp: number, deltaTime: number, random: (min: number, max: number) => number) {
+    let temperatureChange = random(-deltaTemp, deltaTemp);
     this.simulationTimer = setInterval(() => {
       this.curTemperature += temperatureChange;
       if (this.curTemperature < 16 || this.curTemperature > 35) {
         this.setTemperature(this.temperature);
-        temperatureChange = this.random(-deltaTemp, deltaTemp);
       }
+      temperatureChange = random(-deltaTemp, deltaTemp);
     }, deltaTime);
   }
 
@@ -106,9 +106,5 @@ export class Thermostat implements IDevice {
 
   get Timer() {
     return this.simulationTimer;
-  }
-
-  private random(min: number, max: number): number {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 }
