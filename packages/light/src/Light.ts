@@ -60,8 +60,12 @@ export class Light implements IDevice {
     const status = "OK";
     this.communicator.publish(action, status);
   }
-  getBrightness(): number {
+  get Brightness(): number {
     return this.brightness;
+  }
+
+  get IsOn() {
+    return this.isOn;
   }
   handleMessage(topic: string, message: Buffer) {
     let action;
