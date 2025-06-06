@@ -1,22 +1,11 @@
 import mqtt from "mqtt";
 import type { ICommunicator } from "../interfaces/ICommunicator.js";
-import type { MessagePayload } from "../types.js";
+import type { Message, MessagePayload, TopicTemplate } from "../types.js";
 
 interface DeviceState {
     status: string;
     lastUpdate: Date;
     data?: Record<string, unknown>;
-}
-
-interface TopicTemplate {
-    action: string;
-    status: string;
-}
-
-interface BackendMessage {
-    deviceId: string;
-    command: string;
-    value?: any;
 }
 
 export class MQTTCommunicator implements ICommunicator {
@@ -100,7 +89,7 @@ export class MQTTCommunicator implements ICommunicator {
     }
 
     // Метод для обробки повідомлень з бекенду
-    public handleBackendMessage(message: BackendMessage): void {
+    public handleBackendMessage(message: Message): void {
         const { deviceId, command, value } = message;
         
         // Формуємо payload у форматі, який очікують пристрої
