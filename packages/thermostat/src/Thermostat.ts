@@ -63,11 +63,11 @@ export class Thermostat implements IDevice {
     const status = "OK";
     this.communicator.publish(action, status);
   }
-  getTemperature(): number {
+  get Temperature(): number {
     return this.temperature;
   }
 
-  getCurTemperature(): number {
+  get CurTemperature(): number {
     return this.curTemperature;
   }
 
@@ -104,7 +104,7 @@ export class Thermostat implements IDevice {
     }
   }
 
-  getTimer() {
+  get Timer() {
     return this.simulationTimer;
   }
 

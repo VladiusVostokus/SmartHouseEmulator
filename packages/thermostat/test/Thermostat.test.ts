@@ -34,29 +34,29 @@ describe("Thermostat methods", () => {
 
   it("should set temperature (TDD)", () => {
     thermostat.setTemperature(22);
-    expect(thermostat.getTemperature()).toBe(22);
+    expect(thermostat.Temperature).toBe(22);
   });
 
   it("should set temperature to min value", () => {
     thermostat.setTemperature(16);
-    expect(thermostat.getTemperature()).toBe(16);
+    expect(thermostat.Temperature).toBe(16);
   });
 
   it("should set temperature to max value", () => {
     thermostat.setTemperature(35);
-    expect(thermostat.getTemperature()).toBe(35);
+    expect(thermostat.Temperature).toBe(35);
   });
 
   it("should not set temperature to negative value (optional)", () => {
     thermostat.setTemperature(-10);
-    expect(thermostat.getTemperature()).not.toBe(-10);
+    expect(thermostat.Temperature).not.toBe(-10);
   });
 
   it("should keep temperature after turnOn/turnOff", () => {
     thermostat.setTemperature(25);
     thermostat.turnOn();
     thermostat.turnOff();
-    expect(thermostat.getTemperature()).toBe(25);
+    expect(thermostat.Temperature).toBe(25);
   });
 });
 
@@ -79,7 +79,7 @@ describe("Themostat methods with communicator mock", () => {
     );
     thermo.handleMessage("/home/thermo1/action", message);
 
-    expect(thermo.getTemperature()).toBe(25);
+    expect(thermo.Temperature).toBe(25);
     expect(mockCommunicator.publish).toHaveBeenCalledWith(
       "setTemperature",
       "OK",
@@ -94,7 +94,7 @@ describe("Themostat methods with communicator mock", () => {
     );
     thermo.handleMessage("/home/thermo1/action", message);
 
-    expect(thermo.getTemperature()).not.toBe(50);
+    expect(thermo.Temperature).not.toBe(50);
     expect(mockCommunicator.publish).toHaveBeenCalledWith(
       "setTemperature",
       "NO",
@@ -113,13 +113,13 @@ describe("Thermostat changing temperature depending in environment temprerature"
  
   it("should change curTemperature after interval", () => {
     const thermo = new Thermostat("thermo1", mockCommunicator);
-    const initialTemp = thermo.getCurTemperature()
+    const initialTemp = thermo.CurTemperature;
 
     thermo.emulateTemperatureChange(2, 1000);
 
     vi.advanceTimersByTime(1001);
 
-    const changedTemp = thermo.getCurTemperature();
+    const changedTemp = thermo.CurTemperature;
     expect(changedTemp).not.toBe(initialTemp);
   });
 
@@ -130,8 +130,8 @@ describe("Thermostat changing temperature depending in environment temprerature"
 
     vi.advanceTimersByTime(1001);
 
-    const changedTemp = thermo.getCurTemperature();
-    const expectedTemp = thermo.getTemperature();
+    const changedTemp = thermo.CurTemperature;
+    const expectedTemp = thermo.Temperature;
     expect(changedTemp).toBe(expectedTemp);
   });
 
@@ -140,6 +140,6 @@ describe("Thermostat changing temperature depending in environment temprerature"
 
     thermo.emulateTemperatureChange(1, 1);
     thermo.stopSimulation();
-    expect(thermo.getTimer()).toBeNull();
+    expect(thermo.Timer).toBeNull();
   });
 });
