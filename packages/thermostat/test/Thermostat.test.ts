@@ -34,29 +34,29 @@ describe("Thermostat methods", () => {
 
   it("should set temperature (TDD)", () => {
     thermostat.setTemperature(22);
-    expect(thermostat.getTemperature()).toBe(22);
+    expect(thermostat.Temperature).toBe(22);
   });
 
   it("should set temperature to min value", () => {
     thermostat.setTemperature(16);
-    expect(thermostat.getTemperature()).toBe(16);
+    expect(thermostat.Temperature).toBe(16);
   });
 
   it("should set temperature to max value", () => {
     thermostat.setTemperature(35);
-    expect(thermostat.getTemperature()).toBe(35);
+    expect(thermostat.Temperature).toBe(35);
   });
 
   it("should not set temperature to negative value (optional)", () => {
     thermostat.setTemperature(-10);
-    expect(thermostat.getTemperature()).not.toBe(-10);
+    expect(thermostat.Temperature).not.toBe(-10);
   });
 
   it("should keep temperature after turnOn/turnOff", () => {
     thermostat.setTemperature(25);
     thermostat.turnOn();
     thermostat.turnOff();
-    expect(thermostat.getTemperature()).toBe(25);
+    expect(thermostat.Temperature).toBe(25);
   });
 });
 
@@ -79,7 +79,7 @@ describe("Themostat methods with communicator mock", () => {
     );
     thermo.handleMessage("/home/thermo1/action", message);
 
-    expect(thermo.getTemperature()).toBe(25);
+    expect(thermo.Temperature).toBe(25);
     expect(mockCommunicator.publish).toHaveBeenCalledWith(
       "setTemperature",
       "OK",
@@ -94,10 +94,62 @@ describe("Themostat methods with communicator mock", () => {
     );
     thermo.handleMessage("/home/thermo1/action", message);
 
-    expect(thermo.getTemperature()).not.toBe(50);
+    expect(thermo.Temperature).not.toBe(50);
     expect(mockCommunicator.publish).toHaveBeenCalledWith(
       "setTemperature",
       "NO",
     );
+  });
+});
+
+describe("Thermostat changing temperature depending in environment temprerature", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const randomMock = (min: number, max: number): number => {
+    return max;
+  };
+
+  it("should change curTemperature after interval", () => {
+    const thermo = new Thermostat("thermo1", mockCommunicator);
+    const initialTemp = thermo.CurTemperature;
+    const deltaTemp = 2;
+    const deltaTime = 1000;
+
+    thermo.emulateTemperatureChange(deltaTemp, deltaTime, randomMock);
+
+    vi.advanceTimersByTime(1001);
+
+    const changedTemp = thermo.CurTemperature;
+    expect(changedTemp).not.toBe(initialTemp);
+  });
+
+  it("should change curTemperature if curTemperatur is to low or to hight", () => {
+    const thermo = new Thermostat("thermo1", mockCommunicator);
+    const deltaTemp = 100;
+    const deltaTime = 1000;
+
+    thermo.emulateTemperatureChange(deltaTemp, deltaTime, randomMock);
+
+    vi.advanceTimersByTime(1001);
+
+    const changedTemp = thermo.CurTemperature;
+    const expectedTemp = thermo.Temperature;
+    expect(changedTemp).toBe(expectedTemp);
+  });
+
+  it("should stop timer if simulation stopped", () => {
+    const thermo = new Thermostat("thermo1", mockCommunicator);
+    const deltaTemp = 1;
+    const deltaTime = 1;
+
+    thermo.emulateTemperatureChange(deltaTemp, deltaTime, randomMock);
+    thermo.stopSimulation();
+    expect(thermo.Timer).toBeNull();
   });
 });

@@ -16,47 +16,47 @@ describe("Light methods", () => {
 
   it("should be off by default", () => {
     // @ts-ignore
-    expect(light.isOn).toBe(false);
+    expect(light.IsOn).toBe(false);
   });
 
   it("should turn on", () => {
     light.turnOn();
     // @ts-ignore
-    expect(light.isOn).toBe(true);
+    expect(light.IsOn).toBe(true);
   });
 
   it("should turn off", () => {
     light.turnOn();
     light.turnOff();
     // @ts-ignore
-    expect(light.isOn).toBe(false);
+    expect(light.IsOn).toBe(false);
   });
 
   it("should set brightness (TDD)", () => {
     light.setBrightness(80);
-    expect(light.getBrightness()).toBe(80);
+    expect(light.Brightness).toBe(80);
   });
 
   it("should set brightness to min value", () => {
     light.setBrightness(0);
-    expect(light.getBrightness()).toBe(0);
+    expect(light.Brightness).toBe(0);
   });
 
   it("should set brightness to max value", () => {
     light.setBrightness(100);
-    expect(light.getBrightness()).toBe(100);
+    expect(light.Brightness).toBe(100);
   });
 
   it("should not set brightness to negative value (optional)", () => {
     light.setBrightness(-10);
-    expect(light.getBrightness()).not.toBe(-10);
+    expect(light.Brightness).not.toBe(-10);
   });
 
   it("should keep brightness after turnOn/turnOff", () => {
     light.setBrightness(60);
     light.turnOn();
     light.turnOff();
-    expect(light.getBrightness()).toBe(60);
+    expect(light.Brightness).toBe(60);
   });
 });
 
@@ -67,7 +67,7 @@ describe("Light methods with communicator mock", () => {
     const message = Buffer.from(JSON.stringify({ cmd: "turn", arg: "on" }));
     light.handleMessage("/home/light1/action", message);
 
-    expect(light["isOn"]).toBe(true);
+    expect(light["IsOn"]).toBe(true);
     expect(mockCommunicator.publish).toHaveBeenCalledWith("turnOn", "OK");
   });
 
@@ -79,7 +79,7 @@ describe("Light methods with communicator mock", () => {
     );
     light.handleMessage("/home/light1/action", message);
 
-    expect(light.getBrightness()).toBe(75);
+    expect(light.Brightness).toBe(75);
     expect(mockCommunicator.publish).toHaveBeenCalledWith(
       "setBrightness",
       "OK",
@@ -94,7 +94,7 @@ describe("Light methods with communicator mock", () => {
     );
     light.handleMessage("/home/light1/action", message);
 
-    expect(light.getBrightness()).not.toBe(150);
+    expect(light.Brightness).not.toBe(150);
     expect(mockCommunicator.publish).toHaveBeenCalledWith(
       "setBrightness",
       "NO",

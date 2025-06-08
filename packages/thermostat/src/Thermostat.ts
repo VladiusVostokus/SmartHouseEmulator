@@ -6,6 +6,8 @@ export class Thermostat implements IDevice {
   private isOn: boolean;
   private communicator: ICommunicator;
   private temperature: number = 22;
+  private curTemperature: number = 22;
+  private simulationTimer: NodeJS.Timeout | null = null;
 
   constructor(name: string, communicator: ICommunicator) {
     this.name = name;
@@ -51,11 +53,16 @@ export class Thermostat implements IDevice {
       return;
     }
     this.temperature = temp;
+    this.curTemperature = temp;
     const status = "OK";
     this.communicator.publish(action, status);
   }
-  getTemperature(): number {
+  get Temperature(): number {
     return this.temperature;
+  }
+
+  get CurTemperature(): number {
+    return this.curTemperature;
   }
 
   handleMessage(topic: string, message: Buffer) {
@@ -71,5 +78,27 @@ export class Thermostat implements IDevice {
     if (command) {
       command(arg);
     }
+  }
+
+  emulateTemperatureChange(deltaTemp: number, deltaTime: number, random: (min: number, max: number) => number) {
+    let temperatureChange = random(-deltaTemp, deltaTemp);
+    this.simulationTimer = setInterval(() => {
+      this.curTemperature += temperatureChange;
+      if (this.curTemperature < 16 || this.curTemperature > 35) {
+        this.setTemperature(this.temperature);
+      }
+      temperatureChange = random(-deltaTemp, deltaTemp);
+    }, deltaTime);
+  }
+
+  stopSimulation() {
+    if (this.simulationTimer) {
+      clearTimeout(this.simulationTimer);
+      this.simulationTimer = null;
+    }
+  }
+
+  get Timer() {
+    return this.simulationTimer;
   }
 }
