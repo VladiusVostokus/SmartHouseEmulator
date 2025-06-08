@@ -11,7 +11,9 @@
     "lint": "eslint \"src/**/*.ts\" \"packages/*/src/**/*.ts\"",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"packages/*/src/**/*.ts\"",
     "format": "prettier --check \"src/**/*.{ts,js,json}\" \"packages/**/*.{ts,js,json}\"",
-    "format:fix": "prettier --write \"src/**/*.{ts,js,json}\" \"packages/**/*.{ts,js,json}\""
+    "format:fix": "prettier --write \"src/**/*.{ts,js,json}\" \"packages/**/*.{ts,js,json}\"",
+    "dev:movement-sensor-cli": "tsx packages/movement-sensor/src/cli.ts",
+    "run:movement-sensor-cli": "node packages/movement-sensor/dist/cli.js"
   },
   "private": true,
   "workspaces": [

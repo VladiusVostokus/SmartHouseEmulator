@@ -80,7 +80,11 @@ export class Thermostat implements IDevice {
     }
   }
 
-  emulateTemperatureChange(deltaTemp: number, deltaTime: number, random: (min: number, max: number) => number) {
+  emulateTemperatureChange(
+    deltaTemp: number,
+    deltaTime: number,
+    random: (min: number, max: number) => number,
+  ) {
     let temperatureChange = random(-deltaTemp, deltaTemp);
     this.simulationTimer = setInterval(() => {
       this.curTemperature += temperatureChange;

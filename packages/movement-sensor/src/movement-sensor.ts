@@ -1,12 +1,8 @@
-import type { ICommunicator, IDevice } from "@smart-house/common";
+import { BaseDevice, type ICommunicator } from "@smart-house/common";
 import type { MovementSensorConfig } from "./interfaces/movement-sensor-config.interface";
 
-export class MovementSensor implements IDevice {
-  private readonly name: string;
-  private readonly type: string = "movement-sensor";
-  private _isOn: boolean = false;
+export class MovementSensor extends BaseDevice {
   private _isSimulating: boolean = false;
-  private communicator: ICommunicator;
   private simulationTimer: NodeJS.Timeout | null = null;
 
   private readonly minDetectionIntervalMs: number;
@@ -18,75 +14,50 @@ export class MovementSensor implements IDevice {
     communicator: ICommunicator,
     config: MovementSensorConfig = {},
   ) {
-    this.name = name;
-    this.communicator = communicator;
+    super(name, "movement-sensor", communicator);
+
     this.minDetectionIntervalMs = config.minIntervalMs ?? 3000;
     this.maxDetectionIntervalMs = config.maxIntervalMs ?? 15000;
     this.detectionProbability = config.detectionProbability ?? 0.5;
-  }
-
-  public get isOn(): boolean {
-    return this._isOn;
   }
 
   public get isSimulating(): boolean {
     return this._isSimulating;
   }
 
-  public handleMessage(topic: string, message: Buffer): void {
-    let payload;
-    try {
-      payload = JSON.parse(message.toString());
-    } catch (e) {
-      console.warn(
-        `[${this.name}] Invalid JSON on topic ${topic}: ${message.toString()}`,
-        e,
-      );
-      return;
-    }
-    const { cmd, arg } = payload;
-    const handler = this.handlers[cmd];
-    if (handler) {
-      handler(arg);
-    } else {
-      console.warn(`[${this.name}] Unknown command '${cmd}' received.`);
-    }
-  }
-
   public turnOn(): boolean {
-    if (this._isOn) {
-      console.log(`[${this.name}] Already ON.`);
-      return false;
-    }
-    this._isOn = true;
-    this.communicator.publish("turnOn", "OK");
-    console.log(`[${this.name}] Turned ON.`);
-    return true;
+    const changed = super.turnOn();
+    return changed;
   }
 
   public turnOff(): boolean {
-    if (!this._isOn) {
-      console.log(`[${this.name}] Already OFF.`);
-      return false;
+    const changed = super.turnOff();
+    if (changed) {
+      this.stopSimulation();
     }
-    this._isOn = false;
-    this.stopSimulation();
-    this.communicator.publish("turnOff", "OK");
-    console.log(`[${this.name}] Turned OFF.`);
-    return true;
+    return changed;
   }
 
   public startSimulation(): boolean {
-    if (!this._isOn) {
+    if (!this.isOn) {
       console.log(`[${this.name}] Cannot start simulation: sensor is OFF.`);
+      this.publishStatusUpdate({
+        actionContext: "startSimulation",
+        status: "IGNORED",
+        reason: "Device is off",
+      });
       return false;
     }
     if (this._isSimulating) {
-      console.log(`[${this.name}] Simulation is already running.`);
       return false;
     }
     this._isSimulating = true;
     console.log(`[${this.name}] Starting motion detection simulation.`);
+    this.publishStatusUpdate({
+      actionContext: "startSimulation",
+      status: "OK",
+      simulationState: "STARTED",
+    });
     this.scheduleNextDetection();
     return true;
   }
@@ -101,20 +72,19 @@ export class MovementSensor implements IDevice {
     }
     this._isSimulating = false;
     console.log(`[${this.name}] Stopped motion detection simulation.`);
+    this.publishStatusUpdate({
+      actionContext: "stopSimulation",
+      status: "OK",
+      simulationState: "STOPPED",
+    });
     return true;
   }
 
-  private handlers: { [key: string]: (arg: string) => void } = {
-    turn: (arg: string) => {
-      if (arg === "on") this.turnOn();
-      else if (arg === "off") this.turnOff();
-      else console.warn(`[${this.name}] Unknown 'turn' argument: ${arg}`);
-    },
-  };
-
   private scheduleNextDetection(): void {
-    if (!this._isSimulating || !this._isOn) {
-      this.stopSimulation();
+    if (!this._isSimulating || !this.isOn) {
+      if (this._isSimulating) {
+        this.stopSimulation();
+      }
       return;
     }
 
@@ -125,13 +95,15 @@ export class MovementSensor implements IDevice {
       ) + this.minDetectionIntervalMs;
 
     this.simulationTimer = setTimeout(() => {
-      if (this._isSimulating && this._isOn) {
+      if (this._isSimulating && this.isOn) {
         if (Math.random() < this.detectionProbability) {
           this.detectAndPublishMotion();
         }
         this.scheduleNextDetection();
       } else {
-        this.stopSimulation();
+        if (this._isSimulating) {
+          this.stopSimulation();
+        }
       }
     }, randomDelay);
   }
