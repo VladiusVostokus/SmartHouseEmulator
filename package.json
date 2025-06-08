@@ -13,7 +13,11 @@
     "format": "prettier --check \"src/**/*.{ts,js,json}\" \"packages/**/*.{ts,js,json}\"",
     "format:fix": "prettier --write \"src/**/*.{ts,js,json}\" \"packages/**/*.{ts,js,json}\"",
     "dev:movement-sensor-cli": "tsx packages/movement-sensor/src/cli.ts",
-    "run:movement-sensor-cli": "node packages/movement-sensor/dist/cli.js"
+    "run:movement-sensor-cli": "node packages/movement-sensor/dist/cli.js",
+    "pre-run:movement-sensor-cli": "npm run build --workspace @smart-house/movement-sensor",
+    "dev:light-cli": "tsx packages/light/src/cli.ts",
+    "run:light-cli": "node packages/light/dist/cli.js",
+    "pre-run:light-cli": "npm run build --workspace @smart-house/light"
   },
   "private": true,
   "workspaces": [

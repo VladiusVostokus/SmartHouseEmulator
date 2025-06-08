@@ -2,7 +2,6 @@ import { BaseDevice, type ICommunicator } from "@smart-house/common";
 import type { MovementSensorConfig } from "./interfaces/movement-sensor-config.interface";
 
 export class MovementSensor extends BaseDevice {
-  private _isSimulating: boolean = false;
   private simulationTimer: NodeJS.Timeout | null = null;
 
   private readonly minDetectionIntervalMs: number;
@@ -19,10 +18,6 @@ export class MovementSensor extends BaseDevice {
     this.minDetectionIntervalMs = config.minIntervalMs ?? 3000;
     this.maxDetectionIntervalMs = config.maxIntervalMs ?? 15000;
     this.detectionProbability = config.detectionProbability ?? 0.5;
-  }
-
-  public get isSimulating(): boolean {
-    return this._isSimulating;
   }
 
   public turnOn(): boolean {

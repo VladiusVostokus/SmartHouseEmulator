@@ -7,6 +7,7 @@ export abstract class BaseDevice implements IDevice {
   protected readonly deviceType: string;
   protected _isOn: boolean = false;
   protected communicator: ICommunicator;
+  protected _isSimulating: boolean = false;
 
   protected commandHandlers: {
     [command: string]: (payload: CommandPayload) => void;
@@ -21,6 +22,10 @@ export abstract class BaseDevice implements IDevice {
 
   public get isOn(): boolean {
     return this._isOn;
+  }
+
+  public get isSimulating(): boolean {
+    return this._isSimulating;
   }
 
   private initializeBaseHandlers(): void {
@@ -131,4 +136,8 @@ export abstract class BaseDevice implements IDevice {
     });
     this.communicator.publish(primaryAction, statusPayloadString);
   }
+
+  public abstract startSimulation(...args: any[]): boolean;
+
+  public abstract stopSimulation(): boolean;
 }
