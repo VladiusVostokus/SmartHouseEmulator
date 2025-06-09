@@ -6,7 +6,7 @@ export class MQTTCommunicator implements ICommunicator {
   private clientId: string;
   private topics: TopicTemplate = {
     action: '',
-    status: ''
+    status: '',
   };
 
   constructor(topics: string[], clientId: string, brocker: string) {
