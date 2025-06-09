@@ -101,7 +101,62 @@ npx tsc --build packages/thermostat
 npm --prefix packages/thermostat run start
 ```
 
-## 5. Testing the Setup
+## 5. Managing Inter-Package Dependencies (TypeScript Project References)
+
+This monorepo uses TypeScript Project References to manage dependencies between local packages (e.g., `light` depending on `common`). This ensures correct build order and type-checking.
+
+**When to add a reference:**
+
+If package `A` needs to import code from package `B` (both being local packages within `packages/`), you must tell TypeScript about this relationship.
+
+**How to add a reference:**
+
+1.  **Identify the consumer and provider:**
+
+    - Consumer: The package doing the importing (e.g., `packages/light`).
+    - Provider: The package being imported from (e.g., `packages/common`).
+
+2.  **Edit the consumer's `tsconfig.json`:**
+    Open the `tsconfig.json` file of the _consuming_ package (e.g., `packages/light/tsconfig.json`).
+
+3.  **Add to the `references` array:**
+    Add an object specifying the path to the _provider_ package. The path is relative to the consumer's `tsconfig.json`.
+
+    **Example:** If `packages/light` needs to import from `packages/common`:
+
+    ```json
+    // In packages/light/tsconfig.json
+    {
+      "extends": "../../tsconfig.base.json",
+      "compilerOptions": {
+        "composite": true,
+        "rootDir": "src",
+        "outDir": "dist"
+        // ... other options
+      },
+      "include": ["src"],
+      "exclude": ["node_modules", "dist", "test"],
+      "references": [
+        { "path": "../common" } // <--- Add this line
+        // ... any other existing references
+      ]
+    }
+    ```
+
+4.  **Re-run the build:**
+    After adding or changing references, always run the full build from the root:
+    ```bash
+    npm run build
+    ```
+
+**Important Notes on References:**
+
+- **Unidirectional:** Dependencies should generally flow one way (e.g., `light` -> `common`). Avoid circular references (A -> B and B -> A), as TypeScript will error.
+- **`composite: true`:** Both the referencing and referenced `tsconfig.json` files must have `"composite": true` in their `compilerOptions`.
+- **`declaration: true`:** Referenced projects typically need `"declaration": true` to emit `.d.ts` files.
+- **`package.json` Dependencies:** While TypeScript references handle build-time dependencies, ensure you also have the corresponding dependency listed in the consumer's `package.json` (e.g., `"@smart-house/common": "workspace:^"` in `packages/light/package.json`). `npm install` uses this for linking.
+
+## 6. Testing the Setup
 
 1. Subscribe to all topics (in a separate terminal):
 
@@ -127,7 +182,7 @@ curl -X POST http://localhost:3000/light/hallway-light-1/turnOn
 
 You should see the published MQTT messages in the subscriber terminal, and logs in your Hono.js console.
 
-## 6. Code Quality & Testing
+## 7. Code Quality & Testing
 
 ### Run ESLint (Code Linting)
 

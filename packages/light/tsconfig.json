@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.json", // pick up your base compilerOptions
+  "extends": "../../tsconfig.base.json", // pick up your base compilerOptions
   "compilerOptions": {
     "composite": true, // REQUIRED for project references
     "rootDir": "src",
@@ -7,5 +7,7 @@
     "declaration": true,
     "declarationMap": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "test"],
+  "references": [{ "path": "../common" }]
 }

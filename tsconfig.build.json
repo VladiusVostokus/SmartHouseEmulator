@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.base.json",
+  "references": [
+    { "path": "packages/common" },
+    { "path": "packages/light" },
+    { "path": "packages/thermostat" },
+    { "path": "packages/movement-sensor" },
+    { "path": "packages/server" }
+  ],
+  "exclude": ["node_modules", "dist", "packages/*/dist"],
+  "files": [],
+  "include": []
+}
