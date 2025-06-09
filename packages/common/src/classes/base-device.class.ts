@@ -118,6 +118,7 @@ export abstract class BaseDevice implements IDevice {
       return false;
     }
     this._isOn = false;
+    this.stopSimulation();
     this.communicator.publish("turnOff", "OK");
     console.log(`[${this.name}] Turned OFF.`);
     return true;
@@ -137,7 +138,10 @@ export abstract class BaseDevice implements IDevice {
     this.communicator.publish(primaryAction, statusPayloadString);
   }
 
-  public abstract startSimulation(...args: any[]): boolean;
-
-  public abstract stopSimulation(): boolean;
+  public startSimulation(...args: any[]): boolean {
+    return false;
+  }
+  public stopSimulation(): boolean {
+    return false;
+  }
 }
