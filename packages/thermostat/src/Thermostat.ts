@@ -33,12 +33,6 @@ export class Thermostat implements IDevice {
     },
   };
 
-  subscribe(topic: string): void {
-    throw new Error("Method not implemented.");
-  }
-  publish(topic: string): void {
-    throw new Error("Method not implemented.");
-  }
   turnOn(): void {
     this.isOn = true;
     const action = "turnOn";
@@ -86,7 +80,11 @@ export class Thermostat implements IDevice {
     }
   }
 
-  emulateTemperatureChange(deltaTemp: number, deltaTime: number, random: (min: number, max: number) => number) {
+  emulateTemperatureChange(
+    deltaTemp: number,
+    deltaTime: number,
+    random: (min: number, max: number) => number,
+  ) {
     let temperatureChange = random(-deltaTemp, deltaTemp);
     this.simulationTimer = setInterval(() => {
       this.curTemperature += temperatureChange;

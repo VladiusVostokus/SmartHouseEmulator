@@ -1,5 +1,5 @@
 import mqtt from "mqtt";
-import type { ICommunicator } from "../interfaces/ICommunicator.js";
+import type { ICommunicator } from "../interfaces/communicator.interface.js";
 
 export class MQTTCommunicator implements ICommunicator {
   private client: mqtt.MqttClient;
