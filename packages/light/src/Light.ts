@@ -3,23 +3,12 @@ import {
   type CommandPayload,
   type ICommunicator,
 } from "@smart-house/common";
-import type { LightConfig } from "./interfaces/light-config.interface";
 
 export class Light extends BaseDevice {
   private _brightness: number = 100;
-  private simulationTimer: NodeJS.Timeout | null = null;
 
-  private readonly simulationIntervalMs: number;
-  private readonly brightnessFluctuation: number;
-
-  constructor(
-    name: string,
-    communicator: ICommunicator,
-    config: LightConfig = {},
-  ) {
+  constructor(name: string, communicator: ICommunicator) {
     super(name, "light", communicator);
-    this.simulationIntervalMs = config.simulationIntervalMs ?? 10000;
-    this.brightnessFluctuation = config.brightnessFluctuation ?? 5;
 
     this.initializeLightHandlers();
   }

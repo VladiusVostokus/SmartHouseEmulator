@@ -149,7 +149,7 @@ describe("MovementSensor", () => {
         Buffer.from(JSON.stringify({ cmd: "unknown", arg: "test" })),
       );
       expect(console.warn).toHaveBeenCalledWith(
-        `[${sensorName}] Unknown command 'unknown' received.`,
+        `[${sensorName}] Unknown command 'unknown' received on topic .`,
       );
     });
 

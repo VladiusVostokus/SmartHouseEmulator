@@ -107,10 +107,6 @@ describe("Thermostat changing temperature depending in environment temprerature"
     vi.useFakeTimers();
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
   const randomMock = (min: number, max: number): number => {
     return max;
   };
