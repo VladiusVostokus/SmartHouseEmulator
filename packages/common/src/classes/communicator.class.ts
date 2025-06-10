@@ -20,7 +20,7 @@ export class MQTTCommunicator implements ICommunicator {
     this.client.subscribe(topics, (err) => {
       if (err) console.error("MQTT subscribe error:", err);
     });
-    
+
     this.client.on("connect", () => {
       console.log("Connected to broker");
       this.client.publish(
@@ -46,10 +46,10 @@ export class MQTTCommunicator implements ICommunicator {
       status: status,
     };
     this.client.publish(
-      `/home/${this.clientId}/action`,
+      `/home/${this.clientId}/status`,
       JSON.stringify(payload),
     );
-    console.log("Publish data to topic:", `/home/${this.clientId}/action`);
+    console.log("Publish data to topic:", `/home/${this.clientId}/status`);
   }
 
   listen(handler: (arg0: string, arg1: Buffer) => void) {

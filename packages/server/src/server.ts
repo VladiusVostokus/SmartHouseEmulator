@@ -1,4 +1,3 @@
-// src/server.ts
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { BackendCommunicator } from "./classes/backend-communicator.class";
@@ -11,20 +10,29 @@ export function startHttpServer() {
     const { deviceId, actionType } = c.req.param();
     let value;
 
-    if (["setBrightness", "setTemperature", "energyMode"].includes(actionType)) {
+    if (
+      ["setBrightness", "setTemperature", "energyMode"].includes(actionType)
+    ) {
       const body = await c.req.json();
-      value = body[actionType === "setBrightness" ? "brightness" : 
-                   actionType === "setTemperature" ? "temperature" : 
-                   "mode"];
+      value =
+        body[
+          actionType === "setBrightness"
+            ? "brightness"
+            : actionType === "setTemperature"
+              ? "temperature"
+              : "mode"
+        ];
     }
 
     communicator.handleBackendMessage({
       deviceId,
       command: actionType,
-      value
+      value,
     });
 
-    return c.text(`Sent ${actionType}${value ? `=${value}` : ''} to ${deviceId}`);
+    return c.text(
+      `Sent ${actionType}${value ? `=${value}` : ""} to ${deviceId}`,
+    );
   });
 
   app.get("/home/:deviceId/status", (c) => {
