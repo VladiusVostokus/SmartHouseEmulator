@@ -1,73 +1,47 @@
-// src/server.ts
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
-import mqtt from "mqtt";
+import { BackendCommunicator } from "./classes/backend-communicator.class";
 
 export function startHttpServer() {
   const app = new Hono();
-  const client = mqtt.connect("mqtt://localhost:1883");
+  const communicator = new BackendCommunicator("mqtt://localhost:1883");
 
-  // 1) When we connect, set up our wildcard subscription:
-  client.on("connect", () => {
-    console.log("✅ MQTT client connected");
+  app.post("/home/:deviceId/:actionType", async (c) => {
+    const { deviceId, actionType } = c.req.param();
+    let value;
 
-    // Subscribe to everything under /home/{deviceId}/#
-    // (# matches any number of levels)
-    client.subscribe("/home/+/+", (err) => {
-      if (err) console.error("❌ Subscribe error:", err);
-      else console.log("✅ Subscribed to /home/+/+");
+    if (
+      ["setBrightness", "setTemperature", "energyMode"].includes(actionType)
+    ) {
+      const body = await c.req.json();
+      value =
+        body[
+          actionType === "setBrightness"
+            ? "brightness"
+            : actionType === "setTemperature"
+              ? "temperature"
+              : "mode"
+        ];
+    }
+
+    communicator.handleBackendMessage({
+      deviceId,
+      command: actionType,
+      value,
     });
-  });
 
-  // 2) Handle every incoming MQTT message:
-  client.on("message", (topic, payload) => {
-    console.log(`📥 MQTT message on ${topic}: ${payload.toString()}`);
-    // <-- here you could push into some in-memory state,
-    //     forward over WebSocket, trigger other business logic, etc.
-  });
-
-  // 3) Helper functions to publish commands:
-  function publishTurn(deviceId: string, action: "on" | "off") {
-    client.publish(`/home/${deviceId}/turnLight`, JSON.stringify({ action }));
-  }
-  function publishBrightness(deviceId: string, brightness: number) {
-    client.publish(
-      `/home/${deviceId}/brightness`,
-      JSON.stringify({ brightness }),
+    return c.text(
+      `Sent ${actionType}${value ? `=${value}` : ""} to ${deviceId}`,
     );
-  }
-  function publishEnergyMode(deviceId: string, mode: string) {
-    client.publish(`/home/${deviceId}/energyMode`, JSON.stringify({ mode }));
-  }
-
-  // 4) HTTP endpoints → MQTT
-  app.post("/light/:deviceId/turnOn", (c) => {
-    const { deviceId } = c.req.param();
-    publishTurn(deviceId, "on");
-    return c.text(`Sent turnOn to ${deviceId}`);
   });
 
-  app.post("/light/:deviceId/turnOff", (c) => {
+  app.get("/home/:deviceId/status", (c) => {
     const { deviceId } = c.req.param();
-    publishTurn(deviceId, "off");
-    return c.text(`Sent turnOff to ${deviceId}`);
+    const status = communicator.getDeviceStatus(deviceId);
+    return c.json({ deviceId, status });
   });
 
-  app.post("/light/:deviceId/brightness", async (c) => {
-    const { deviceId } = c.req.param();
-    const { brightness } = await c.req.json();
-    publishBrightness(deviceId, brightness);
-    return c.text(`Sent brightness=${brightness} to ${deviceId}`);
-  });
-
-  app.post("/light/:deviceId/energyMode", async (c) => {
-    const { deviceId } = c.req.param();
-    const { mode } = await c.req.json();
-    publishEnergyMode(deviceId, mode);
-    return c.text(`Sent mode=${mode} to ${deviceId}`);
-  });
-
-  // 5) Launch the HTTP server
+  // Launch the HTTP server
   serve({ fetch: app.fetch, port: 3000 }, (info) =>
     console.log(`➡️ HTTP server running at http://localhost:${info.port}`),
   );

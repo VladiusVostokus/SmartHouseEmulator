@@ -1,5 +1,4 @@
 import { MQTTCommunicator } from "@smart-house/common";
-import type { LightConfig } from "./interfaces/light-config.interface";
 import { Light } from "./light";
 
 console.log("Starting Light Device CLI...");
@@ -10,7 +9,7 @@ const deviceName = `Light-${instanceId}`;
 
 const brokerUrl = process.env.MQTT_BROKER_URL || "mqtt://localhost:1883";
 
-const topicsToSubscribe = [`/home/${clientId}/status`];
+const topicsToSubscribe = [`/home/${clientId}/action`];
 
 console.log(`[${deviceName}] Initializing with Client ID: ${clientId}`);
 console.log(`[${deviceName}] Connecting to MQTT broker at ${brokerUrl}`);
@@ -21,13 +20,7 @@ const communicator = new MQTTCommunicator(
   brokerUrl,
 );
 
-const lightConfig: LightConfig = {
-  simulationIntervalMs: 15000,
-  brightnessFluctuation: 10,
-};
-console.log(`[${deviceName}] Using config:`, lightConfig);
-
-const light = new Light(deviceName, communicator, lightConfig);
+const light = new Light(deviceName, communicator);
 
 communicator.listen((topic: string, message: Buffer) => {
   console.log(

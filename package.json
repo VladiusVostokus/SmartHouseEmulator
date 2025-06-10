@@ -2,10 +2,10 @@
   "name": "smart-house",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/core/index.ts",
+    "dev": "tsx watch src/index.ts",
     "prebuild": "npm run clean",
     "build": "tsc --build tsconfig.build.json",
-    "start": "node dist/core/index.js",
+    "start": "node dist/index.js",
     "clean": "rimraf dist packages/*/dist packages/*/tsconfig.tsbuildinfo tsconfig.build.tsbuildinfo",
     "test": "vitest",
     "lint": "eslint \"src/**/*.ts\" \"packages/*/src/**/*.ts\"",
