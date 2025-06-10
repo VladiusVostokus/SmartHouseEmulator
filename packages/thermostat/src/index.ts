@@ -1,1 +1,1 @@
-export { Thermostat } from "./Thermostat";
+export { Thermostat } from "./thermostat";

@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { Thermostat } from "../src/Thermostat.js";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { Thermostat } from "../src/thermostat.js";
 
 // Мокаємо ICommunicator
 const mockCommunicator = {
@@ -107,14 +107,10 @@ describe("Thermostat changing temperature depending in environment temprerature"
     vi.useFakeTimers();
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
   const randomMock = (min: number, max: number): number => {
-      return max;
-  }
- 
+    return max;
+  };
+
   it("should change curTemperature after interval", () => {
     const thermo = new Thermostat("thermo1", mockCommunicator);
     const initialTemp = thermo.CurTemperature;

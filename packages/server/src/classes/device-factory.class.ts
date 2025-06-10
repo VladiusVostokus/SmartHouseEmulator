@@ -1,5 +1,5 @@
 import type { ICommunicator, IDevice } from "@smart-house/common";
-import type { DeviceConstructor } from "../types/devicesCollection";
+import type { DeviceConstructor } from "../types/devices-collection.types";
 
 export class DeviceFactory {
   deviceCollection: Record<string, DeviceConstructor>;
