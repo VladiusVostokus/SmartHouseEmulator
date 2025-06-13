@@ -10,6 +10,11 @@ export function startHttpServer() {
     const { deviceId, actionType } = c.req.param();
     let value;
 
+    const deviceState = communicator.getDeviceStatus(deviceId);
+    if (deviceState === "unknown") {
+      throw new Error(`There are no device ${deviceId}`);
+    }
+
     if (
       ["setBrightness", "setTemperature", "energyMode"].includes(actionType)
     ) {
