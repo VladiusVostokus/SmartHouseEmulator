@@ -9,7 +9,7 @@ const deviceName = `Light-${instanceId}`;
 
 const brokerUrl = process.env.MQTT_BROKER_URL || "mqtt://localhost:1883";
 
-const topicsToSubscribe = [`/home/${clientId}/action`];
+const topicsToSubscribe = [`/home/+/action`, `/home/+/status`];
 
 console.log(`[${deviceName}] Initializing with Client ID: ${clientId}`);
 console.log(`[${deviceName}] Connecting to MQTT broker at ${brokerUrl}`);
