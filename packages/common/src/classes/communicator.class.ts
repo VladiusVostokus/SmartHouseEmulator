@@ -25,7 +25,7 @@ export class MQTTCommunicator implements ICommunicator {
       will: willMessage,
     });
 
-    this.client.subscribe(topics, (err) => {
+    this.client.subscribe(this.topics['action'], (err) => {
       if (err) console.error("MQTT subscribe error:", err);
     });
 
@@ -54,16 +54,18 @@ export class MQTTCommunicator implements ICommunicator {
       status: status,
     };
     this.client.publish(
-      this.topics['action'],
+      this.topics['status'],
       JSON.stringify(payload),
     );
-    console.log("Publish data to topic:", this.topics['action']);
+    console.log("Publish data to topic:", this.topics['status']);
   }
 
   listen(handler: (arg0: string, arg1: Buffer) => void) {
     this.client.on("message", (topic, message) => {
-      handler(topic, message);
-      console.log("Get message form topic:", topic);
+      if (topic === this.topics['action']) {
+        handler(topic, message);
+        console.log("Get message form topic:", topic);
+      }
     });
   }
 }
