@@ -6,6 +6,7 @@ const actionsArgs: Record<string, string> = {
   "setBrightness": "brightness",
   "setTemperature": "temperature",
   "energyMode": "mode",
+  "turn":"mode",
 };
 
 export function startHttpServer() {
