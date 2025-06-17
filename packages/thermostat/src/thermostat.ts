@@ -38,24 +38,35 @@ export class Thermostat implements IDevice {
     const action = "turnOn";
     const status = "OK";
     this.communicator.publish(action, status);
+    console.log(`[${this.name}] Turned ON.`);
   }
   turnOff(): void {
     this.isOn = false;
     const action = "turnOff";
     const status = "OK";
     this.communicator.publish(action, status);
+    console.log(`[${this.name}] Turned OFF.`);
   }
   setTemperature(temp: number): void {
     const action = "setTemperature";
+    if (!this.isOn) {
+      console.warn(`[${this.name}] Cannot set temperature: Thermostat is OFF.`);
+      this.communicator.publish(action, "IGNORED");
+      return;
+    }
     if (temp < 16 || temp > 35) {
       const status = "NO";
       this.communicator.publish(action, status);
+      console.warn(
+        `[${this.name}] Brightness level ${temp} is out of range (16-35).`,
+      );
       return;
     }
     this.temperature = temp;
     this.curTemperature = temp;
     const status = "OK";
     this.communicator.publish(action, status);
+    console.log(`[${this.name}] Temperature set to ${this.temperature}C.`);
   }
 
   handleMessage(topic: string, message: Buffer) {
