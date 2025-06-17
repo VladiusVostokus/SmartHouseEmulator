@@ -59,6 +59,10 @@ export class BackendCommunicator implements ICommunicator {
   }
 
   private updateDeviceState(deviceId: string, payload: MessagePayload): void {
+    if (payload.status === "offline") {
+      this.deviceStates.delete(deviceId);
+      return;
+    }
     this.deviceStates.set(deviceId, {
       status: payload.status || "unknown",
       lastUpdate: new Date(),

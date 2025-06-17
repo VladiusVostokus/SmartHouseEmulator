@@ -2,26 +2,34 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { BackendCommunicator } from "./classes/backend-communicator.class";
 
+const actionsArgs: Record<string, string> = {
+  "setBrightness": "brightness",
+  "setTemperature": "temperature",
+  "energyMode": "mode",
+  "turn":"mode",
+};
+
 export function startHttpServer() {
   const app = new Hono();
   const communicator = new BackendCommunicator("mqtt://localhost:1883");
 
   app.post("/home/:deviceId/:actionType", async (c) => {
     const { deviceId, actionType } = c.req.param();
-    let value;
 
-    if (
-      ["setBrightness", "setTemperature", "energyMode"].includes(actionType)
-    ) {
-      const body = await c.req.json();
-      value =
-        body[
-          actionType === "setBrightness"
-            ? "brightness"
-            : actionType === "setTemperature"
-              ? "temperature"
-              : "mode"
-        ];
+    const deviceState = communicator.getDeviceStatus(deviceId);
+    if (deviceState === "unknown") {
+      throw new Error(`There are no device ${deviceId}`);
+    }
+
+    const actionArg = actionsArgs[actionType];
+
+    if (!actionArg) {
+      throw new Error(`Unknown action ${actionType}`);
+    }
+    const body = await c.req.json();
+    const value = body[actionArg];
+    if (!value) {
+      throw new Error(`Unknown action argument for ${actionType}`);
     }
 
     communicator.handleBackendMessage({

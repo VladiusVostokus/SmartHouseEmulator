@@ -5,7 +5,7 @@ import type { MovementSensorConfig } from "./interfaces/movement-sensor-config.i
 const clientId = `movement-sensor-${Math.floor(Math.random() * 1000)}`;
 const brokerUrl = process.env.MQTT_BROKER_URL || "mqtt://localhost:1883";
 
-const topicsToSubscribe = [`/home/${clientId}/status`];
+const topicsToSubscribe = [`/home/+/action`, `/home/+/status`];
 
 const communicator = new MQTTCommunicator(
   topicsToSubscribe,
