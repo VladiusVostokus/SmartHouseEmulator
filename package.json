@@ -21,7 +21,10 @@
     "pre-run:movement-sensor-cli": "npm run build --workspace @smart-house/movement-sensor",
     "dev:light-cli": "tsx packages/light/src/cli.ts",
     "run:light-cli": "node packages/light/dist/cli.js",
-    "pre-run:light-cli": "npm run build --workspace @smart-house/light"
+    "pre-run:light-cli": "npm run build --workspace @smart-house/light",
+    "dev:thermo-cli": "tsx packages/thermostat/src/cli.ts",
+    "run:thermo-cli": "node packages/thermostat/dist/cli.js",
+    "pre-run:thermo-cli": "npm run build --workspace @smart-house/thermostat"
   },
   "private": true,
   "workspaces": [

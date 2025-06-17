@@ -57,13 +57,6 @@ export class Thermostat implements IDevice {
     const status = "OK";
     this.communicator.publish(action, status);
   }
-  get Temperature(): number {
-    return this.temperature;
-  }
-
-  get CurTemperature(): number {
-    return this.curTemperature;
-  }
 
   handleMessage(topic: string, message: Buffer) {
     let action;
@@ -100,6 +93,18 @@ export class Thermostat implements IDevice {
       clearTimeout(this.simulationTimer);
       this.simulationTimer = null;
     }
+  }
+
+  get IsOn(): boolean {
+    return this.isOn;
+  }
+
+  get Temperature(): number {
+    return this.temperature;
+  }
+
+  get CurTemperature(): number {
+    return this.curTemperature;
   }
 
   get Timer() {
