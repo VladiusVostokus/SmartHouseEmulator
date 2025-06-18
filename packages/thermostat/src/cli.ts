@@ -48,7 +48,7 @@ console.log(`[${deviceName}] Press Ctrl+C to exit.`);
 
 process.on("SIGINT", () => {
   console.log(`\n[${deviceName}] SIGINT received. Shutting down thermo...`);
-  if (thermo.IsOn) {
+  if (thermo.isOn) {
     thermo.turnOff();
   }
   console.log(`[${deviceName}] Thermo shutdown complete.`);
