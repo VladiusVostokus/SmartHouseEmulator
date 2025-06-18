@@ -55,7 +55,7 @@ export class Thermostat implements IDevice {
       return;
     }
     if (temp < 16 || temp > 35) {
-      const status = "NO";
+      const status = "ERROR";
       this.communicator.publish(action, status);
       console.warn(
         `[${this.name}] Brightness level ${temp} is out of range (16-35).`,

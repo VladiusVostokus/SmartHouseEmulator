@@ -22,39 +22,43 @@ describe("Thermostat methods", () => {
   it("should turn on", () => {
     thermostat.turnOn();
     // @ts-ignore
-    expect(thermostat.isOn).toBe(true);
+    expect(thermostat.IsOn).toBe(true);
   });
 
   it("should turn off", () => {
     thermostat.turnOn();
     thermostat.turnOff();
     // @ts-ignore
-    expect(thermostat.isOn).toBe(false);
+    expect(thermostat.IsOn).toBe(false);
   });
 
   it("should set temperature (TDD)", () => {
+    thermostat.turnOn();
     thermostat.setTemperature(22);
     expect(thermostat.Temperature).toBe(22);
   });
 
   it("should set temperature to min value", () => {
+    thermostat.turnOn();
     thermostat.setTemperature(16);
     expect(thermostat.Temperature).toBe(16);
   });
 
   it("should set temperature to max value", () => {
+    thermostat.turnOn();
     thermostat.setTemperature(35);
     expect(thermostat.Temperature).toBe(35);
   });
 
   it("should not set temperature to negative value (optional)", () => {
+    thermostat.turnOn();
     thermostat.setTemperature(-10);
     expect(thermostat.Temperature).not.toBe(-10);
   });
 
   it("should keep temperature after turnOn/turnOff", () => {
-    thermostat.setTemperature(25);
     thermostat.turnOn();
+    thermostat.setTemperature(25);
     thermostat.turnOff();
     expect(thermostat.Temperature).toBe(25);
   });
@@ -63,6 +67,7 @@ describe("Thermostat methods", () => {
 describe("Themostat methods with communicator mock", () => {
   it("should turn on when receiving a 'turn on' message", () => {
     const thermo = new Thermostat("light1", mockCommunicator);
+    thermo.turnOn();
 
     const message = Buffer.from(JSON.stringify({ cmd: "turn", arg: "on" }));
     thermo.handleMessage("/home/thermo1/action", message);
@@ -73,6 +78,7 @@ describe("Themostat methods with communicator mock", () => {
 
   it("should set brightness correctly and publish OK", () => {
     const thermo = new Thermostat("thermo1", mockCommunicator);
+    thermo.turnOn();
 
     const message = Buffer.from(
       JSON.stringify({ cmd: "setTemperature", arg: "25" }),
@@ -88,6 +94,7 @@ describe("Themostat methods with communicator mock", () => {
 
   it("should not set brightness if value is invalid", () => {
     const thermo = new Thermostat("thermo1", mockCommunicator);
+    thermo.turnOn();
 
     const message = Buffer.from(
       JSON.stringify({ cmd: "setTemperature", arg: "50" }),
@@ -97,7 +104,7 @@ describe("Themostat methods with communicator mock", () => {
     expect(thermo.Temperature).not.toBe(50);
     expect(mockCommunicator.publish).toHaveBeenCalledWith(
       "setTemperature",
-      "NO",
+      "ERROR",
     );
   });
 });
@@ -113,6 +120,7 @@ describe("Thermostat changing temperature depending in environment temprerature"
 
   it("should change curTemperature after interval", () => {
     const thermo = new Thermostat("thermo1", mockCommunicator);
+    thermo.turnOn();
     const initialTemp = thermo.CurTemperature;
     const deltaTemp = 2;
     const deltaTime = 1000;
@@ -127,6 +135,7 @@ describe("Thermostat changing temperature depending in environment temprerature"
 
   it("should change curTemperature if curTemperatur is to low or to hight", () => {
     const thermo = new Thermostat("thermo1", mockCommunicator);
+    thermo.turnOn();
     const deltaTemp = 100;
     const deltaTime = 1000;
 
