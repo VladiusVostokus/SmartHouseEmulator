@@ -65,9 +65,11 @@ export class Thermostat extends BaseDevice {
     deltaTime: number,
     random: (min: number, max: number) => number,
   ) {
+    console.log(`[${this.name}] Start temperature simulation`)
     let temperatureChange = random(-deltaTemp, deltaTemp);
     this.simulationTimer = setInterval(() => {
       this._curTemperature += temperatureChange;
+      console.log(`[${this.name}] Current envitonment temperatur is ${this._curTemperature}`);
       if (this._curTemperature < 16 || this._curTemperature > 35) {
         this.setTemperature(this._temperature);
       }

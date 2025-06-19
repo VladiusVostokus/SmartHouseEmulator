@@ -36,7 +36,14 @@ console.log(
   `[${deviceName}] Simulating device power ON and starting its behavior simulation...`,
 );
 
+const deltaTemp = 5;
+const deltaTime = 5000;
+const random = (min: number, max: number): number => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 thermo.turnOn();
+thermo.emulateTemperatureChange(deltaTemp, deltaTime, random);
 
 console.log(
   `[${deviceName}] Thermo CLI is running. Device name: "${deviceName}", Client ID: "${clientId}".`,
@@ -49,6 +56,7 @@ console.log(`[${deviceName}] Press Ctrl+C to exit.`);
 process.on("SIGINT", () => {
   console.log(`\n[${deviceName}] SIGINT received. Shutting down thermo...`);
   if (thermo.isOn) {
+    thermo.stopSimulation();
     thermo.turnOff();
   }
   console.log(`[${deviceName}] Thermo shutdown complete.`);
