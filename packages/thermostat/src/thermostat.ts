@@ -42,9 +42,9 @@ export class Thermostat extends BaseDevice {
   }
 
   turnOn(): boolean {
+    const changed = super.turnOn();
     if (this._isSimulating) 
       this.emulateTemperatureChange(this.deltaTemp, this.deltaTime, this.emulationCallback)
-    const changed = super.turnOn();
     return changed;
   }
 
@@ -83,6 +83,10 @@ export class Thermostat extends BaseDevice {
     deltaTime: number,
     random: (min: number, max: number) => number,
   ) {
+    if (!this._isOn) {
+      console.warn(`[${this.name}] Can't start simulation - device is off`);
+      return;
+    }
     this._isSimulating = true;
     this.deltaTemp = deltaTemp;
     this.deltaTime = deltaTime;

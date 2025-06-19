@@ -171,4 +171,13 @@ describe("Thermostat changing temperature depending in environment temprerature"
     thermo.turnOn();
     expect(thermo.timer).not.toBeNull();
   });
+
+  it("shouldn't start simulation if device turned off", () => {
+    const thermo = new Thermostat("thermo1", mockCommunicator);
+    const deltaTemp = 1;
+    const deltaTime = 1;
+
+    thermo.emulateTemperatureChange(deltaTemp, deltaTime, randomMock);
+    expect(thermo.timer).toBeNull();
+  });
 });
