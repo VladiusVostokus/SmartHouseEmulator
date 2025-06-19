@@ -1,83 +1,81 @@
-import type { ICommunicator, IDevice } from "@smart-house/common";
+import {
+  BaseDevice,
+  type CommandPayload,
+  type ICommunicator,
+} from "@smart-house/common";
 
-export class Thermostat implements IDevice {
-  private name: string;
-  private type: string;
-  private isOn: boolean;
-  private communicator: ICommunicator;
-  private temperature: number = 22;
-  private curTemperature: number = 22;
+
+export class Thermostat extends BaseDevice {
+  private _temperature: number = 22;
+  private _curTemperature: number = 22;
   private simulationTimer: NodeJS.Timeout | null = null;
+  private deltaTemp: number;
+  private deltaTime: number;
+  private emulationCallback: (min: number, max: number) => number;
 
   constructor(name: string, communicator: ICommunicator) {
-    this.name = name;
-    this.type = "thermo";
-    this.communicator = communicator;
-    this.isOn = false;
+    super(name, "light", communicator);
+    this.initializeLightHandlers();
   }
 
-  private handlers: { [key: string]: (arg: string) => void } = {
-    turn: (arg: string) => {
-      if (arg === "on") this.turnOn();
-      else if (arg === "off") this.turnOff();
-      else console.warn("Unknown turn action:", arg);
-    },
-
-    setTemperature: (arg: string) => {
-      try {
-        const brightness = Number(arg);
-        this.setTemperature(brightness);
-      } catch (e) {
-        console.error("Unknown brightness value:", e);
-      }
-    },
-  };
-
-  turnOn(): void {
-    this.isOn = true;
-    const action = "turnOn";
-    const status = "OK";
-    this.communicator.publish(action, status);
+  private initializeLightHandlers(): void {
+    this.registerCommandHandler(
+      "setTemperature",
+      (payload: CommandPayload & { level?: number }) => {
+        const levelValue =
+          payload.level ?? (payload.arg ? Number(payload.arg) : undefined);
+        if (typeof levelValue === "number" && !isNaN(levelValue)) {
+          this.setTemperature(levelValue);
+        } else {
+          console.error(
+            `[${this.name}] Invalid temperature value received:`,
+            payload,
+          );
+          this.publishStatusUpdate({
+            actionContext: "setTemperature",
+            status: "ERROR",
+            error: "Invalid temperature value",
+          });
+        }
+      },
+    );
   }
-  turnOff(): void {
-    this.isOn = false;
-    const action = "turnOff";
-    const status = "OK";
-    this.communicator.publish(action, status);
+
+  turnOn(): boolean {
+    const changed = super.turnOn();
+    if (this._isSimulating) 
+      this.emulateTemperatureChange(this.deltaTemp, this.deltaTime, this.emulationCallback)
+    return changed;
   }
+
+  turnOff(): boolean {
+    const changed = super.turnOff();
+    if (changed) {
+      this.stopSimulation();
+    }
+    return changed;
+  }
+
   setTemperature(temp: number): void {
     const action = "setTemperature";
-    if (temp < 16 || temp > 35) {
-      const status = "NO";
-      this.communicator.publish(action, status);
+    if (!this.isOn) {
+      console.warn(`[${this.name}] Cannot set temperature: Thermostat is OFF.`);
+      this.communicator.publish(action, "IGNORED");
       return;
     }
-    this.temperature = temp;
-    this.curTemperature = temp;
+    if (temp < 16 || temp > 35) {
+      const status = "ERROR";
+      this.communicator.publish(action, status);
+      console.warn(
+        `[${this.name}] Temperature level ${temp} is out of range (16-35).`,
+      );
+      return;
+    }
+    this._temperature = temp;
+    this._curTemperature = temp;
     const status = "OK";
     this.communicator.publish(action, status);
-  }
-  get Temperature(): number {
-    return this.temperature;
-  }
-
-  get CurTemperature(): number {
-    return this.curTemperature;
-  }
-
-  handleMessage(topic: string, message: Buffer) {
-    let action;
-    try {
-      action = JSON.parse(message.toString());
-    } catch {
-      console.warn(`Invalid JSON on topic ${topic}:`, message.toString());
-      return;
-    }
-    const { cmd, arg } = action;
-    const command = this.handlers[cmd];
-    if (command) {
-      command(arg);
-    }
+    console.log(`[${this.name}] Temperature set to ${this._temperature}C.`);
   }
 
   emulateTemperatureChange(
@@ -85,24 +83,47 @@ export class Thermostat implements IDevice {
     deltaTime: number,
     random: (min: number, max: number) => number,
   ) {
+    if (!this._isOn) {
+      console.warn(`[${this.name}] Can't start simulation - device is off`);
+      return;
+    }
+    this._isSimulating = true;
+    this.deltaTemp = deltaTemp;
+    this.deltaTime = deltaTime;
+    this.emulationCallback = random;
+    console.log(`[${this.name}] Start temperature simulation`)
     let temperatureChange = random(-deltaTemp, deltaTemp);
     this.simulationTimer = setInterval(() => {
-      this.curTemperature += temperatureChange;
-      if (this.curTemperature < 16 || this.curTemperature > 35) {
-        this.setTemperature(this.temperature);
+      this._curTemperature += temperatureChange;
+      console.log(`[${this.name}] Current envitonment temperatur is ${this._curTemperature}`);
+      if (this._curTemperature < 16 || this._curTemperature > 35) {
+        this.setTemperature(this._temperature);
       }
       temperatureChange = random(-deltaTemp, deltaTemp);
     }, deltaTime);
   }
 
-  stopSimulation() {
+  stopSimulation(): boolean {
     if (this.simulationTimer) {
       clearTimeout(this.simulationTimer);
       this.simulationTimer = null;
     }
+    return true;
   }
 
-  get Timer() {
+  get isOn(): boolean {
+    return this._isOn;
+  }
+
+  get temperature(): number {
+    return this._temperature;
+  }
+
+  get curTemperature(): number {
+    return this._curTemperature;
+  }
+
+  get timer() {
     return this.simulationTimer;
   }
 }
