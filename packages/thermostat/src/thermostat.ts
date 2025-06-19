@@ -9,13 +9,16 @@ export class Thermostat extends BaseDevice {
   private _temperature: number = 22;
   private _curTemperature: number = 22;
   private simulationTimer: NodeJS.Timeout | null = null;
-  private deltaTemp: number;
-  private deltaTime: number;
+  private deltaTemp: number = 0;
+  private deltaTime: number = 0;
   private emulationCallback: (min: number, max: number) => number;
 
   constructor(name: string, communicator: ICommunicator) {
     super(name, "light", communicator);
     this.initializeLightHandlers();
+    this.emulationCallback = () => {
+      return 0;
+    }
   }
 
   private initializeLightHandlers(): void {
