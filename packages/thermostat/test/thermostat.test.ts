@@ -150,11 +150,25 @@ describe("Thermostat changing temperature depending in environment temprerature"
 
   it("should stop timer if simulation stopped", () => {
     const thermo = new Thermostat("thermo1", mockCommunicator);
+    thermo.turnOn();
     const deltaTemp = 1;
     const deltaTime = 1;
 
     thermo.emulateTemperatureChange(deltaTemp, deltaTime, randomMock);
     thermo.stopSimulation();
     expect(thermo.timer).toBeNull();
+  });
+
+  it("should continue simulation after reboot", () => {
+    const thermo = new Thermostat("thermo1", mockCommunicator);
+    thermo.turnOn();
+    const deltaTemp = 1;
+    const deltaTime = 1;
+
+    thermo.emulateTemperatureChange(deltaTemp, deltaTime, randomMock);
+    thermo.turnOff();
+    expect(thermo.timer).toBeNull();
+    thermo.turnOn();
+    expect(thermo.timer).not.toBeNull();
   });
 });

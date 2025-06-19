@@ -9,6 +9,9 @@ export class Thermostat extends BaseDevice {
   private _temperature: number = 22;
   private _curTemperature: number = 22;
   private simulationTimer: NodeJS.Timeout | null = null;
+  private deltaTemp: number;
+  private deltaTime: number;
+  private emulationCallback: (min: number, max: number) => number;
 
   constructor(name: string, communicator: ICommunicator) {
     super(name, "light", communicator);
@@ -38,6 +41,21 @@ export class Thermostat extends BaseDevice {
     );
   }
 
+  turnOn(): boolean {
+    if (this._isSimulating) 
+      this.emulateTemperatureChange(this.deltaTemp, this.deltaTime, this.emulationCallback)
+    const changed = super.turnOn();
+    return changed;
+  }
+
+  turnOff(): boolean {
+    const changed = super.turnOff();
+    if (changed) {
+      this.stopSimulation();
+    }
+    return changed;
+  }
+
   setTemperature(temp: number): void {
     const action = "setTemperature";
     if (!this.isOn) {
@@ -65,6 +83,10 @@ export class Thermostat extends BaseDevice {
     deltaTime: number,
     random: (min: number, max: number) => number,
   ) {
+    this._isSimulating = true;
+    this.deltaTemp = deltaTemp;
+    this.deltaTime = deltaTime;
+    this.emulationCallback = random;
     console.log(`[${this.name}] Start temperature simulation`)
     let temperatureChange = random(-deltaTemp, deltaTemp);
     this.simulationTimer = setInterval(() => {
