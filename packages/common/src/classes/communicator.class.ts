@@ -18,7 +18,7 @@ export class MQTTCommunicator implements ICommunicator {
     const willMessage = {
       topic: this.topics['status'],
       payload: JSON.stringify({ status: "offline" }),
-      retain: true,
+      //retain: true,
     };
     this.client = mqtt.connect(brocker, {
       clientId: this.clientId,
@@ -36,7 +36,7 @@ export class MQTTCommunicator implements ICommunicator {
         JSON.stringify({ clientId: this.clientId, status: "online" }),
         {
           qos: 1,
-          retain: true,
+          //retain: true,
         },
       );
     });
