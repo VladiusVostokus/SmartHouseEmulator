@@ -48,6 +48,7 @@ export class BackendCommunicator implements ICommunicator {
         }
 
         console.log(`Received message from ${deviceId} on topic: ${topic}`);
+        console.log("Message content:", payload);
       } catch (error) {
         console.error("Error processing message:", error);
       }
