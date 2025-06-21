@@ -14,7 +14,7 @@ export class Thermostat extends BaseDevice {
   private emulationCallback: (min: number, max: number) => number;
 
   constructor(name: string, communicator: ICommunicator) {
-    super(name, "light", communicator);
+    super(name, "thermo", communicator);
     this.initializeLightHandlers();
     this.emulationCallback = () => {
       return 0;
