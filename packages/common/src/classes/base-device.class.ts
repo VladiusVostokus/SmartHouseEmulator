@@ -39,7 +39,7 @@ export abstract class BaseDevice implements IDevice {
         this.publishStatusUpdate({
           actionContext: "turn",
           status: "ERROR",
-          error: "Unknown argument",
+          reason: "Unknown argument",
           argumentReceived: payload.arg,
         });
       }
@@ -65,7 +65,7 @@ export abstract class BaseDevice implements IDevice {
       this.publishStatusUpdate({
         actionContext: "handleMessage",
         status: "ERROR",
-        error: "Invalid JSON received",
+        reason: "Invalid JSON received",
         topic: topic,
       });
       return;
@@ -81,7 +81,7 @@ export abstract class BaseDevice implements IDevice {
       this.publishStatusUpdate({
         actionContext: "handleMessage",
         status: "ERROR",
-        error: "Missing or invalid 'cmd' field",
+        reason: "Missing or invalid 'cmd' field",
         topic: topic,
       });
       return;
@@ -97,7 +97,7 @@ export abstract class BaseDevice implements IDevice {
       this.publishStatusUpdate({
         actionContext: cmd,
         status: "ERROR",
-        error: "Unknown command",
+        reason: "Unknown command",
         topic: topic,
       });
     }
@@ -129,12 +129,12 @@ export abstract class BaseDevice implements IDevice {
       statusDetails.actionContext ||
       statusDetails.lastCommand ||
       "deviceUpdate";
-    const statusPayloadString = JSON.stringify({
-      deviceName: this.name,
-      deviceType: this.deviceType,
+    const statusPayloadString = {
+      status: statusDetails.status,
       timestamp: new Date().toISOString(),
-      ...statusDetails,
-    });
+      reason: statusDetails.reason || "",
+      value: statusDetails.value || "",
+    };
     this.communicator.publish(primaryAction, statusPayloadString);
   }
 

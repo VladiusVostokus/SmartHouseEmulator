@@ -51,7 +51,7 @@ export class MovementSensor extends BaseDevice {
     this.publishStatusUpdate({
       actionContext: "startSimulation",
       status: "OK",
-      simulationState: "STARTED",
+      value: "STARTED",
     });
     this.scheduleNextDetection();
     return true;
@@ -70,7 +70,7 @@ export class MovementSensor extends BaseDevice {
     this.publishStatusUpdate({
       actionContext: "stopSimulation",
       status: "OK",
-      simulationState: "STOPPED",
+      value: "STOPPED",
     });
     return true;
   }

@@ -37,7 +37,8 @@ export class Thermostat extends BaseDevice {
           this.publishStatusUpdate({
             actionContext: "setTemperature",
             status: "ERROR",
-            error: "Invalid temperature value",
+            reason: "Invalid temperature value",
+            value: levelValue
           });
         }
       },
@@ -63,12 +64,21 @@ export class Thermostat extends BaseDevice {
     const action = "setTemperature";
     if (!this.isOn) {
       console.warn(`[${this.name}] Cannot set temperature: Thermostat is OFF.`);
-      this.communicator.publish(action, "IGNORED");
+      this.publishStatusUpdate({
+        actionContext: action,
+        status: "IGNORED",
+        reason: "Device is off",
+        value: temp,
+      });
       return;
     }
     if (temp < 16 || temp > 35) {
-      const status = "ERROR";
-      this.communicator.publish(action, status);
+      this.publishStatusUpdate({
+        actionContext: action,
+        status: "ERROR",
+        reason: "Temperature out of range",
+        value: temp,
+      });
       console.warn(
         `[${this.name}] Temperature level ${temp} is out of range (16-35).`,
       );
@@ -76,8 +86,11 @@ export class Thermostat extends BaseDevice {
     }
     this._temperature = temp;
     this._curTemperature = temp;
-    const status = "OK";
-    this.communicator.publish(action, status);
+    this.publishStatusUpdate({
+      actionContext: action,
+      status: "OK",
+      value: temp,
+    });
     console.log(`[${this.name}] Temperature set to ${this._temperature}C.`);
   }
 
