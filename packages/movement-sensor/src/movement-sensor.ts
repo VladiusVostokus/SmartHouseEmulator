@@ -104,7 +104,11 @@ export class MovementSensor extends BaseDevice {
   }
 
   private detectAndPublishMotion(): void {
-    this.communicator.publish("motionDetected", "DETECTED");
+    this.publishStatusUpdate({
+      actionContext: "motionDetected",
+      status: "OK",
+      value: "DETECTED",
+    });
     console.log(`[${this.name}] Published motion detected.`);
   }
 }

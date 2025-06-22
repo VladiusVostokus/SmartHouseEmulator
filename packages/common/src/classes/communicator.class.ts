@@ -17,7 +17,13 @@ export class MQTTCommunicator implements ICommunicator {
 
     const willMessage = {
       topic: this.topics['status'],
-      payload: JSON.stringify({ status: "offline" }),
+      payload: JSON.stringify({
+        clientId: this.clientId,
+        action: "disabling", 
+        status: {
+          status: "offline",
+        },
+      }),
       //retain: true,
     };
     this.client = mqtt.connect(brocker, {
@@ -33,7 +39,12 @@ export class MQTTCommunicator implements ICommunicator {
       console.log("Connected to broker");
       this.client.publish(
         this.topics['status'],
-        JSON.stringify({ clientId: this.clientId, status: "online" }),
+        JSON.stringify({ 
+          clientId: this.clientId, 
+          status: {
+            status: "online",
+          }
+        }),
         {
           qos: 1,
           //retain: true,

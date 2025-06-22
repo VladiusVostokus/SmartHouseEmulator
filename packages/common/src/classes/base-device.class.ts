@@ -108,7 +108,11 @@ export abstract class BaseDevice implements IDevice {
       return false;
     }
     this._isOn = true;
-    this.communicator.publish("turnOn", "OK");
+    this.publishStatusUpdate({
+      actionContext: "turn",
+      status: "OK",
+      value: "ON",
+    });
     console.log(`[${this.name}] Turned ON.`);
     return true;
   }
@@ -119,7 +123,11 @@ export abstract class BaseDevice implements IDevice {
     }
     this._isOn = false;
     this.stopSimulation();
-    this.communicator.publish("turnOff", "OK");
+    this.publishStatusUpdate({
+      actionContext: "turn",
+      status: "OK",
+      value: "OFF",
+    });
     console.log(`[${this.name}] Turned OFF.`);
     return true;
   }
