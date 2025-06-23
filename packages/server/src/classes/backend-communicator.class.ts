@@ -43,7 +43,7 @@ export class BackendCommunicator implements ICommunicator {
       try {
         const payload = JSON.parse(message.toString()) as MessagePayload;
         const deviceId = this.extractDeviceId(topic);
-        if (topic.includes('light')) this.lightTopic = topic;
+        if (topic.endsWith("/action") && topic.includes('light')) this.lightTopic = topic;
 
         if (topic.endsWith("/status")) {
           this.updateDeviceState(deviceId, payload);
@@ -65,6 +65,13 @@ export class BackendCommunicator implements ICommunicator {
     if (payload.status.status === "offline") {
       this.deviceStates.delete(deviceId);
       return;
+    }
+    if (payload.status.value === "DETECTED") {
+      const lightPayload = {
+          cmd: "turn",
+          arg: "on",
+      };
+      this.client.publish(this.lightTopic, JSON.stringify(lightPayload));
     }
     this.deviceStates.set(deviceId, {
       status: payload.status.status || "unknown",
