@@ -1,8 +1,12 @@
 export type MessagePayload = {
-  status?: string;
+  clientId: string;
   action?: string;
-  cmd?: string;
-  arg?: any;
-  timestamp?: string;
-  [key: string]: any;
+  status: Status;
 };
+
+type Status = {
+  status: string,
+  timestamp?: string,
+  reason?: string,
+  value?: string
+}

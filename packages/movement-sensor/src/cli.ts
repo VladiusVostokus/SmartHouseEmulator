@@ -15,8 +15,8 @@ const communicator = new MQTTCommunicator(
 
 const sensorConfig: MovementSensorConfig = {
   minIntervalMs: 5000, // e.g., 5 seconds
-  maxIntervalMs: 20000, // e.g., 20 seconds
-  detectionProbability: 0.3, // 30% chance per interval
+  maxIntervalMs: 10000, // e.g., 20 seconds
+  detectionProbability: 1, // 30% chance per interval
 };
 
 const movementSensor = new MovementSensor(clientId, communicator, sensorConfig);

@@ -29,7 +29,7 @@ export class Light extends BaseDevice {
           this.publishStatusUpdate({
             actionContext: "setBrightness",
             status: "ERROR",
-            error: "Invalid brightness level",
+            reason: "Invalid brightness level",
           });
         }
       },
@@ -47,6 +47,7 @@ export class Light extends BaseDevice {
         actionContext: "setBrightness",
         status: "IGNORED",
         reason: "Device is off",
+        value: level,
       });
       return false;
     }
@@ -57,8 +58,8 @@ export class Light extends BaseDevice {
       this.publishStatusUpdate({
         actionContext: "setBrightness",
         status: "ERROR",
-        error: "Brightness out of range",
-        valueReceived: level,
+        reason: "Brightness out of range",
+        value: level,
       });
       return false;
     }
@@ -71,7 +72,7 @@ export class Light extends BaseDevice {
     this.publishStatusUpdate({
       actionContext: "setBrightness",
       status: "OK",
-      brightness: this._brightness,
+      value: level,
     });
     return true;
   }
