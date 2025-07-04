@@ -43,6 +43,23 @@ export function startHttpServer() {
     );
   });
 
+  app.post("/home/linkdevices", async(c) => {
+    const body = await c.req.json();
+    const lightId = body['light'];
+    const sensorId = body['sensor'];
+    const lightStatus = communicator.getDeviceStatus(lightId);
+    if (lightStatus === "unknown") {
+      throw new Error(`There are no device ${lightId} to link with sensor`);
+    }
+    const sensorStatus = communicator.getDeviceStatus(sensorId);
+    if (sensorStatus === "unknown") {
+      throw new Error(`There are no device ${sensorId} to link with light`);
+    }
+    // communicator.createLink(lightId, sensorId);
+    console.log(`Link ${lightId} to ${sensorId}`);
+    return c.json({ lightStatus, sensorStatus });
+  });
+
   app.get("/home/:deviceId/status", (c) => {
     const { deviceId } = c.req.param();
     const status = communicator.getDeviceStatus(deviceId);
