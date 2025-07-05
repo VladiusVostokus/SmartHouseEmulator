@@ -55,8 +55,7 @@ export function startHttpServer() {
     if (sensorStatus === "unknown") {
       throw new Error(`There are no device ${sensorId} to link with light`);
     }
-    // communicator.createLink(lightId, sensorId);
-    console.log(`Link ${lightId} to ${sensorId}`);
+    communicator.createLink(sensorId, lightId);
     return c.json({ lightStatus, sensorStatus });
   });
 
