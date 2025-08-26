@@ -104,10 +104,10 @@ npm --prefix packages/thermostat run start
 ### Movement-sensor emulator
 ```bash
 # build only the Light package
-npx tsc --build packages/movement-sentor
+npx tsc --build packages/movement-sensor
 
 # start the Light device client
-npm --prefix packages/movement-sentor run start
+npm --prefix packages/movement-sensor run start
 ```
 
 ### Connecting movement sensor with light
