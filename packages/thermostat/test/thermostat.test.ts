@@ -118,6 +118,23 @@ describe("Themostat methods with communicator mock", () => {
       }),
     );
   });
+
+  it("should not set temperature if termostat is off", () => {
+    const thermo = new Thermostat("thermo1", mockCommunicator);
+
+    const message = Buffer.from(
+      JSON.stringify({ cmd: "setTemperature", arg: "50" }),
+    );
+    thermo.handleMessage("/home/thermo1/action", message);
+
+    expect(thermo.temperature).not.toBe(50);
+    expect(mockCommunicator.publish).toHaveBeenCalledWith(
+        "setTemperature",
+        expect.objectContaining({
+          status: "IGNORED",
+      }),
+    );
+  });
 });
 
 describe("Thermostat changing temperature depending in environment temprerature", () => {
