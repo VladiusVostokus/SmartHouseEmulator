@@ -14,10 +14,11 @@ export class BackendCommunicator implements ICommunicator {
     action: "/home/+/action",
     status: "/home/+/status",
   };
-  private lightTopic: string = '';
+  private lightSensorLinks: Map<string, string>;
 
   constructor(broker: string) {
     this.deviceStates = new Map();
+    this.lightSensorLinks = new Map();
 
     this.client = mqtt.connect(broker, {
       clientId: "backend-communicator",
@@ -43,7 +44,6 @@ export class BackendCommunicator implements ICommunicator {
       try {
         const payload = JSON.parse(message.toString()) as MessagePayload;
         const deviceId = this.extractDeviceId(topic);
-        if (topic.endsWith("/action") && topic.includes('light')) this.lightTopic = topic;
 
         if (topic.endsWith("/status")) {
           this.updateDeviceState(deviceId, payload);
@@ -68,10 +68,14 @@ export class BackendCommunicator implements ICommunicator {
     }
     if (payload.status.value === "DETECTED") {
       const lightPayload = {
-          cmd: "turn",
-          arg: "on",
+        cmd: "turn",
+        arg: "on",
       };
-      this.client.publish(this.lightTopic, JSON.stringify(lightPayload));
+      const lightId = this.lightSensorLinks.get(deviceId);
+      if (lightId) {
+        const lightTopic = this.topicTemplates.action.replace("+", lightId);
+        this.client.publish(lightTopic, JSON.stringify(lightPayload));
+      }
     }
     this.deviceStates.set(deviceId, {
       status: payload.status.status || "unknown",
@@ -123,6 +127,24 @@ export class BackendCommunicator implements ICommunicator {
     const topic = this.topicTemplates.action.replace("+", deviceId);
     this.client.publish(topic, JSON.stringify(payload));
     console.log("Publish command to topic:", topic);
+  }
+
+  public createLink(sensorId: string, lightId: string) {
+    this.lightSensorLinks.set(sensorId, lightId);
+    console.log(`Link ${lightId} to ${sensorId}`);
+  }
+
+  public deleteLink(sensorId: string): boolean {
+    const lightId = this.lightSensorLinks.get(sensorId);
+    const deletedSuccessfully = this.lightSensorLinks.delete(sensorId);
+    if (!deletedSuccessfully)
+      console.error(
+        "Can not delete link with ",
+        sensorId,
+        ": link does not exist",
+      );
+    else console.log(`Delete link ${lightId} and ${sensorId}`);
+    return deletedSuccessfully;
   }
 
   public getDeviceStatus(deviceId: string): string {

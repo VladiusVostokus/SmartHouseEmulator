@@ -4,7 +4,6 @@ import {
   type ICommunicator,
 } from "@smart-house/common";
 
-
 export class Thermostat extends BaseDevice {
   private _temperature: number = 22;
   private _curTemperature: number = 22;
@@ -18,7 +17,7 @@ export class Thermostat extends BaseDevice {
     this.initializeLightHandlers();
     this.emulationCallback = () => {
       return 0;
-    }
+    };
   }
 
   private initializeLightHandlers(): void {
@@ -38,7 +37,7 @@ export class Thermostat extends BaseDevice {
             actionContext: "setTemperature",
             status: "ERROR",
             reason: "Invalid temperature value",
-            value: levelValue
+            value: levelValue,
           });
         }
       },
@@ -47,8 +46,12 @@ export class Thermostat extends BaseDevice {
 
   turnOn(): boolean {
     const changed = super.turnOn();
-    if (this._isSimulating) 
-      this.emulateTemperatureChange(this.deltaTemp, this.deltaTime, this.emulationCallback)
+    if (this._isSimulating)
+      this.emulateTemperatureChange(
+        this.deltaTemp,
+        this.deltaTime,
+        this.emulationCallback,
+      );
     return changed;
   }
 
@@ -107,11 +110,13 @@ export class Thermostat extends BaseDevice {
     this.deltaTemp = deltaTemp;
     this.deltaTime = deltaTime;
     this.emulationCallback = random;
-    console.log(`[${this.name}] Start temperature simulation`)
+    console.log(`[${this.name}] Start temperature simulation`);
     let temperatureChange = random(-deltaTemp, deltaTemp);
     this.simulationTimer = setInterval(() => {
       this._curTemperature += temperatureChange;
-      console.log(`[${this.name}] Current envitonment temperatur is ${this._curTemperature}`);
+      console.log(
+        `[${this.name}] Current envitonment temperatur is ${this._curTemperature}`,
+      );
       if (this._curTemperature < 16 || this._curTemperature > 35) {
         this.setTemperature(this._temperature);
       }

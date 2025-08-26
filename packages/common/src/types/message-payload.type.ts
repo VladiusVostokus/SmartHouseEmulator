@@ -5,8 +5,8 @@ export type MessagePayload = {
 };
 
 type Status = {
-  status: string,
-  timestamp?: string,
-  reason?: string,
-  value?: string
-}
+  status: string;
+  timestamp?: string;
+  reason?: string;
+  value?: string;
+};

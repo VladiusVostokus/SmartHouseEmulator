@@ -66,14 +66,20 @@ describe("Thermostat methods", () => {
 
 describe("Themostat methods with communicator mock", () => {
   it("should turn on when receiving a 'turn on' message", () => {
-    const thermo = new Thermostat("light1", mockCommunicator);
+    const thermo = new Thermostat("thermo1", mockCommunicator);
     thermo.turnOn();
 
     const message = Buffer.from(JSON.stringify({ cmd: "turn", arg: "on" }));
     thermo.handleMessage("/home/thermo1/action", message);
 
     expect(thermo.isOn).toBe(true);
-    expect(mockCommunicator.publish).toHaveBeenCalledWith("turnOn", "OK");
+    expect(mockCommunicator.publish).toHaveBeenCalledWith(
+      "turn",
+      expect.objectContaining({
+        status: "OK",
+        value: "ON",
+      }),
+    );
   });
 
   it("should set temperature correctly and publish OK", () => {
@@ -86,9 +92,13 @@ describe("Themostat methods with communicator mock", () => {
     thermo.handleMessage("/home/thermo1/action", message);
 
     expect(thermo.temperature).toBe(25);
+
     expect(mockCommunicator.publish).toHaveBeenCalledWith(
       "setTemperature",
-      "OK",
+      expect.objectContaining({
+        status: "OK",
+        value: 25,
+      }),
     );
   });
 
@@ -104,7 +114,28 @@ describe("Themostat methods with communicator mock", () => {
     expect(thermo.temperature).not.toBe(50);
     expect(mockCommunicator.publish).toHaveBeenCalledWith(
       "setTemperature",
-      "ERROR",
+      expect.objectContaining({
+        status: "ERROR",
+        value: 50,
+      }),
+    );
+  });
+
+  it("should not set temperature if termostat is off", () => {
+    const thermo = new Thermostat("thermo1", mockCommunicator);
+
+    const message = Buffer.from(
+      JSON.stringify({ cmd: "setTemperature", arg: "50" }),
+    );
+    thermo.handleMessage("/home/thermo1/action", message);
+
+    expect(thermo.temperature).not.toBe(50);
+    expect(mockCommunicator.publish).toHaveBeenCalledWith(
+      "setTemperature",
+      expect.objectContaining({
+        status: "IGNORED",
+        value: 50,
+      }),
     );
   });
 });

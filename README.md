@@ -101,6 +101,34 @@ npx tsc --build packages/thermostat
 npm --prefix packages/thermostat run start
 ```
 
+### Movement-sensor emulator
+```bash
+# build only the Light package
+npx tsc --build packages/movement-sentor
+
+# start the Light device client
+npm --prefix packages/movement-sentor run start
+```
+
+### Connecting movement sensor with light
+
+Create link between sensor and light, so light can be turned on when sensor detected movement
+
+Use http://localhost:3000/home/linkdevices endpoint for connecting, send post request with JSON:
+```bash
+{
+    "light": "lightId",
+    "sensor": "sensorId"
+}
+```
+
+To delete link, send delete request to http://localhost:3000/home/deletelink with JSON:
+```bash
+{
+    "sensor": "sensorId"
+}
+```
+
 ## 5. Managing Inter-Package Dependencies (TypeScript Project References)
 
 This monorepo uses TypeScript Project References to manage dependencies between local packages (e.g., `light` depending on `common`). This ensures correct build order and type-checking.
