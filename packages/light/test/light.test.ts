@@ -50,12 +50,12 @@ describe("Light", () => {
       expect(light.isOn).toBe(true);
       expect(mockPublishFn).toHaveBeenCalledOnce();
       expect(mockCommunicator.publish).toHaveBeenCalledWith(
-            "turn",
-            expect.objectContaining({
-              status: "OK",
-              value: "ON",
-            }),
-          );
+        "turn",
+        expect.objectContaining({
+          status: "OK",
+          value: "ON",
+        }),
+      );
     });
 
     it("turnOn() should do nothing and return false if already on", () => {
@@ -75,12 +75,12 @@ describe("Light", () => {
       expect(light.isOn).toBe(false);
       expect(mockPublishFn).toHaveBeenCalledOnce();
       expect(mockCommunicator.publish).toHaveBeenCalledWith(
-            "turn",
-            expect.objectContaining({
-              status: "OK",
-              value: "OFF",
-            }),
-          );
+        "turn",
+        expect.objectContaining({
+          status: "OK",
+          value: "OFF",
+        }),
+      );
     });
 
     it("turnOff() should do nothing and return false if already off", () => {
@@ -97,12 +97,12 @@ describe("Light", () => {
       expect(result).toBe(false);
       expect(light.brightness).toBe(100);
       expect(mockCommunicator.publish).toHaveBeenCalledWith(
-            "setBrightness",
-            expect.objectContaining({
-              status: "IGNORED",
-              value: 50,
-            }),
-          );
+        "setBrightness",
+        expect.objectContaining({
+          status: "IGNORED",
+          value: 50,
+        }),
+      );
     });
 
     it("should set brightness if light is on, publish update, and return true", () => {
@@ -113,12 +113,12 @@ describe("Light", () => {
       expect(result).toBe(true);
       expect(light.brightness).toBe(50);
       expect(mockCommunicator.publish).toHaveBeenCalledWith(
-            "setBrightness",
-            expect.objectContaining({
-              status: "OK",
-              value: 50,
-            }),
-          );
+        "setBrightness",
+        expect.objectContaining({
+          status: "OK",
+          value: 50,
+        }),
+      );
     });
 
     it("should not change brightness and return false if new level is same as current", () => {
@@ -143,13 +143,13 @@ describe("Light", () => {
         expect(result).toBe(false);
         expect(light.brightness).toBe(initialBrightness);
         expect(mockCommunicator.publish).toHaveBeenCalledWith(
-            "setBrightness",
-            expect.objectContaining({
-              status: "ERROR",
-              reason: "Brightness out of range",
-              value: invalidLevel,
-            }),
-          );
+          "setBrightness",
+          expect.objectContaining({
+            status: "ERROR",
+            reason: "Brightness out of range",
+            value: invalidLevel,
+          }),
+        );
       },
     );
   });
@@ -166,12 +166,12 @@ describe("Light", () => {
 
       expect(light.brightness).toBe(60);
       expect(mockCommunicator.publish).toHaveBeenCalledWith(
-            "setBrightness",
-            expect.objectContaining({
-              status: "OK",
-              value: 60,
-            }),
-          );
+        "setBrightness",
+        expect.objectContaining({
+          status: "OK",
+          value: 60,
+        }),
+      );
     });
 
     it("should set brightness via 'setBrightness' message with 'arg' property when on", () => {
@@ -185,12 +185,12 @@ describe("Light", () => {
 
       expect(light.brightness).toBe(75);
       expect(mockCommunicator.publish).toHaveBeenCalledWith(
-            "setBrightness",
-            expect.objectContaining({
-              status: "OK",
-              value: 75,
-            }),
-          );
+        "setBrightness",
+        expect.objectContaining({
+          status: "OK",
+          value: 75,
+        }),
+      );
     });
 
     it("should handle invalid 'setBrightness' message (e.g., non-numeric arg) and publish error", () => {
@@ -204,25 +204,23 @@ describe("Light", () => {
 
       expect(light.brightness).toBe(100);
       expect(mockCommunicator.publish).toHaveBeenCalledWith(
-            "setBrightness",
-            expect.objectContaining({
-              status: "ERROR",
-              reason: "Invalid brightness level"
-            }),
-          );
+        "setBrightness",
+        expect.objectContaining({
+          status: "ERROR",
+          reason: "Invalid brightness level",
+        }),
+      );
     });
 
     it("should call publishStatusUpdate with error for invalid JSON message", () => {
       light.handleMessage("/home/TestLight/action", Buffer.from("not json"));
       expect(mockCommunicator.publish).toHaveBeenCalledWith(
-            "handleMessage",
-            expect.objectContaining({
-              status: "ERROR",
-              reason: "Invalid JSON received"
-            }),
-          );
-
-        
+        "handleMessage",
+        expect.objectContaining({
+          status: "ERROR",
+          reason: "Invalid JSON received",
+        }),
+      );
     });
 
     it("should call publishStatusUpdate with error for message with no 'cmd'", () => {
@@ -231,12 +229,12 @@ describe("Light", () => {
         Buffer.from(JSON.stringify({ arg: "on" })),
       );
       expect(mockCommunicator.publish).toHaveBeenCalledWith(
-            "handleMessage",
-            expect.objectContaining({
-              status: "ERROR",
-              reason: "Missing or invalid 'cmd' field"
-            }),
-          );
+        "handleMessage",
+        expect.objectContaining({
+          status: "ERROR",
+          reason: "Missing or invalid 'cmd' field",
+        }),
+      );
     });
   });
 

@@ -41,12 +41,12 @@ describe("MovementSensor", () => {
       expect(result).toBe(true);
       expect(sensor.isOn).toBe(true);
       expect(mockCommunicator.publish).toHaveBeenCalledWith(
-            "turn",
-            expect.objectContaining({
-              status: "OK",
-              value: "ON",
-            }),
-        );
+        "turn",
+        expect.objectContaining({
+          status: "OK",
+          value: "ON",
+        }),
+      );
     });
 
     it("turnOn() should do nothing and return false if already on", () => {
@@ -68,12 +68,12 @@ describe("MovementSensor", () => {
       expect(sensor.isOn).toBe(false);
       expect(sensor.isSimulating).toBe(false);
       expect(mockCommunicator.publish).toHaveBeenCalledWith(
-            "turn",
-            expect.objectContaining({
-              status: "OK",
-              value: "OFF",
-            }),
-        );
+        "turn",
+        expect.objectContaining({
+          status: "OK",
+          value: "OFF",
+        }),
+      );
     });
 
     it("turnOff() should do nothing and return false if already off", () => {
@@ -130,12 +130,12 @@ describe("MovementSensor", () => {
       );
       expect(sensor.isOn).toBe(true);
       expect(mockCommunicator.publish).toHaveBeenCalledWith(
-            "turn",
-            expect.objectContaining({
-              status: "OK",
-              value: "ON",
-            }),
-          );
+        "turn",
+        expect.objectContaining({
+          status: "OK",
+          value: "ON",
+        }),
+      );
     });
 
     it("should turn sensor off via 'turn off' message", () => {
@@ -149,12 +149,12 @@ describe("MovementSensor", () => {
       expect(sensor.isOn).toBe(false);
       expect(sensor.isSimulating).toBe(false);
       expect(mockCommunicator.publish).toHaveBeenCalledWith(
-            "turn",
-            expect.objectContaining({
-              status: "OK",
-              value: "OFF",
-            }),
-        );
+        "turn",
+        expect.objectContaining({
+          status: "OK",
+          value: "OFF",
+        }),
+      );
     });
 
     it("should warn on unknown 'turn' argument", () => {
@@ -194,22 +194,22 @@ describe("MovementSensor", () => {
 
       vi.advanceTimersByTime(defaultConfig.maxIntervalMs! + 100);
       expect(mockCommunicator.publish).toHaveBeenCalledWith(
-            "motionDetected",
-            expect.objectContaining({
-              status: "OK",
-              value: "DETECTED",
-            }),
-        );
+        "motionDetected",
+        expect.objectContaining({
+          status: "OK",
+          value: "DETECTED",
+        }),
+      );
 
       mockPublishFn.mockClear();
       vi.advanceTimersByTime(defaultConfig.maxIntervalMs! + 100);
       expect(mockCommunicator.publish).toHaveBeenCalledWith(
-            "motionDetected",
-            expect.objectContaining({
-              status: "OK",
-              value: "DETECTED",
-            }),
-        );
+        "motionDetected",
+        expect.objectContaining({
+          status: "OK",
+          value: "DETECTED",
+        }),
+      );
     });
 
     it("should not publish 'motionDetected' if simulation is started but sensor is turned off", () => {
@@ -222,12 +222,12 @@ describe("MovementSensor", () => {
 
       vi.advanceTimersByTime(defaultConfig.maxIntervalMs! + 100);
       expect(mockCommunicator.publish).not.toHaveBeenCalledWith(
-            "motionDetected",
-            expect.objectContaining({
-              status: "OK",
-              value: "DETECTED",
-            }),
-        );
+        "motionDetected",
+        expect.objectContaining({
+          status: "OK",
+          value: "DETECTED",
+        }),
+      );
     });
 
     it("should not publish 'motionDetected' if simulation is stopped", () => {
@@ -239,12 +239,12 @@ describe("MovementSensor", () => {
 
       vi.advanceTimersByTime(defaultConfig.maxIntervalMs! + 100);
       expect(mockCommunicator.publish).not.toHaveBeenCalledWith(
-            "motionDetected",
-            expect.objectContaining({
-              status: "OK",
-              value: "DETECTED",
-            }),
-        );
+        "motionDetected",
+        expect.objectContaining({
+          status: "OK",
+          value: "DETECTED",
+        }),
+      );
     });
 
     it("should respect detectionProbability (when probability is 0)", () => {
@@ -258,12 +258,12 @@ describe("MovementSensor", () => {
 
       vi.advanceTimersByTime(defaultConfig.maxIntervalMs! + 100);
       expect(mockCommunicator.publish).not.toHaveBeenCalledWith(
-            "motionDetected",
-            expect.objectContaining({
-              status: "OK",
-              value: "DETECTED",
-            }),
-        );
+        "motionDetected",
+        expect.objectContaining({
+          status: "OK",
+          value: "DETECTED",
+        }),
+      );
     });
   });
 });

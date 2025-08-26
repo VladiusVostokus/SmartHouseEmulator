@@ -40,7 +40,7 @@ const deltaTemp = 5;
 const deltaTime = 5000;
 const random = (min: number, max: number): number => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+};
 
 thermo.turnOn();
 thermo.emulateTemperatureChange(deltaTemp, deltaTime, random);

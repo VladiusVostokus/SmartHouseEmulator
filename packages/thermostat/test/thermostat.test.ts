@@ -97,7 +97,7 @@ describe("Themostat methods with communicator mock", () => {
       "setTemperature",
       expect.objectContaining({
         status: "OK",
-        value: 25
+        value: 25,
       }),
     );
   });
@@ -113,10 +113,10 @@ describe("Themostat methods with communicator mock", () => {
 
     expect(thermo.temperature).not.toBe(50);
     expect(mockCommunicator.publish).toHaveBeenCalledWith(
-        "setTemperature",
-        expect.objectContaining({
-          status: "ERROR",
-          value: 50
+      "setTemperature",
+      expect.objectContaining({
+        status: "ERROR",
+        value: 50,
       }),
     );
   });
@@ -131,10 +131,10 @@ describe("Themostat methods with communicator mock", () => {
 
     expect(thermo.temperature).not.toBe(50);
     expect(mockCommunicator.publish).toHaveBeenCalledWith(
-        "setTemperature",
-        expect.objectContaining({
-          status: "IGNORED",
-          value: 50
+      "setTemperature",
+      expect.objectContaining({
+        status: "IGNORED",
+        value: 50,
       }),
     );
   });

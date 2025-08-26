@@ -68,8 +68,8 @@ export class BackendCommunicator implements ICommunicator {
     }
     if (payload.status.value === "DETECTED") {
       const lightPayload = {
-          cmd: "turn",
-          arg: "on",
+        cmd: "turn",
+        arg: "on",
       };
       const lightId = this.lightSensorLinks.get(deviceId);
       if (lightId) {
@@ -130,17 +130,20 @@ export class BackendCommunicator implements ICommunicator {
   }
 
   public createLink(sensorId: string, lightId: string) {
-    this.lightSensorLinks.set(sensorId,lightId);
+    this.lightSensorLinks.set(sensorId, lightId);
     console.log(`Link ${lightId} to ${sensorId}`);
   }
 
   public deleteLink(sensorId: string): boolean {
     const lightId = this.lightSensorLinks.get(sensorId);
     const deletedSuccessfully = this.lightSensorLinks.delete(sensorId);
-    if (!deletedSuccessfully) 
-      console.error("Can not delete link with ", sensorId, ": link does not exist");
-    else 
-      console.log(`Delete link ${lightId} and ${sensorId}`);
+    if (!deletedSuccessfully)
+      console.error(
+        "Can not delete link with ",
+        sensorId,
+        ": link does not exist",
+      );
+    else console.log(`Delete link ${lightId} and ${sensorId}`);
     return deletedSuccessfully;
   }
 
