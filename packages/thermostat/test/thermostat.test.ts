@@ -97,6 +97,7 @@ describe("Themostat methods with communicator mock", () => {
       "setTemperature",
       expect.objectContaining({
         status: "OK",
+        value: 25
       }),
     );
   });
@@ -115,6 +116,7 @@ describe("Themostat methods with communicator mock", () => {
         "setTemperature",
         expect.objectContaining({
           status: "ERROR",
+          value: 50
       }),
     );
   });
@@ -132,6 +134,7 @@ describe("Themostat methods with communicator mock", () => {
         "setTemperature",
         expect.objectContaining({
           status: "IGNORED",
+          value: 50
       }),
     );
   });
