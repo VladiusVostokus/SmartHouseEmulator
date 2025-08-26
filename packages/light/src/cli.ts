@@ -36,7 +36,7 @@ console.log(
   `[${deviceName}] Simulating device power ON and starting its behavior simulation...`,
 );
 
-light.turnOn();
+//light.turnOn();
 
 console.log(
   `[${deviceName}] Light CLI is running. Device name: "${deviceName}", Client ID: "${clientId}".`,
