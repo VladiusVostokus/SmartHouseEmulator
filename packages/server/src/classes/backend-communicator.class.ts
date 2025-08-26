@@ -134,6 +134,16 @@ export class BackendCommunicator implements ICommunicator {
     console.log(`Link ${lightId} to ${sensorId}`);
   }
 
+  public deleteLink(sensorId: string): boolean {
+    const lightId = this.lightSensorLinks.get(sensorId);
+    const deletedSuccessfully = this.lightSensorLinks.delete(sensorId);
+    if (!deletedSuccessfully) 
+      console.error("Can not delete link with ", sensorId, ": link does not exist");
+    else 
+      console.log(`Delete link ${lightId} and ${sensorId}`);
+    return deletedSuccessfully;
+  }
+
   public getDeviceStatus(deviceId: string): string {
     return this.getDeviceState(deviceId)?.status || "unknown";
   }

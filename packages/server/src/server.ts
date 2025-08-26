@@ -59,6 +59,18 @@ export function startHttpServer() {
     return c.json({ lightStatus, sensorStatus });
   });
 
+  app.delete("/home/deletelink", async(c) => {
+    const body = await c.req.json();
+    const sensorId = body['sensor'];
+    const sensorStatus = communicator.getDeviceStatus(sensorId);
+    if (sensorStatus === "unknown") {
+      throw new Error(`There are no device ${sensorId} to delete link with light`);
+    }
+    const deletedSuccessfully = communicator.deleteLink(sensorId);
+    if (deletedSuccessfully) return c.json({sensorStatus});
+    throw new Error(`Can not delete link with ${sensorId}: link does not exist`);
+  });
+
   app.get("/home/:deviceId/status", (c) => {
     const { deviceId } = c.req.param();
     const status = communicator.getDeviceStatus(deviceId);
